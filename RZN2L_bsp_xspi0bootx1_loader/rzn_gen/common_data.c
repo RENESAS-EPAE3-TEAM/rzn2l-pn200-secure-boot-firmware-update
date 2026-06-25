@@ -1,5 +1,14 @@
 /* generated common source file - do not edit */
 #include "common_data.h"
+rsip_instance_ctrl_t g_rsip_ctrl;
+const rsip_cfg_t g_rsip_cfg;
+/* Instance structure to use this module. */
+const rsip_instance_t g_rsip =
+{
+    .p_ctrl              = &g_rsip_ctrl,
+    .p_cfg               = &g_rsip_cfg,
+    .p_api               = &g_rsip_on_rsip
+};
 /** IOPORT interface configuration for event link **/
             const ioport_extend_cfg_t  g_ioport_cfg_extend =
             {

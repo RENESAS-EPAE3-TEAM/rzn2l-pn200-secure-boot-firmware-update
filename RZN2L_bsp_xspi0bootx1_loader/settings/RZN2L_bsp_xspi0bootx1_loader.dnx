@@ -35,11 +35,11 @@
         <CpuHaltOnBreakpointSet>0</CpuHaltOnBreakpointSet>
     </Jet>
     <ArmDriver>
-        <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
+        <EnableCache>1</EnableCache>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>4180216594</Checksum>
+        <Checksum>1726550680</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -55,8 +55,8 @@
     <SWOManager>
         <SamplingDivider>8192</SamplingDivider>
         <OverrideClock>0</OverrideClock>
-        <CpuClock>7954854873796670571</CpuClock>
-        <SwoClock>5715719247974462309</SwoClock>
+        <CpuClock>28429264711581763</CpuClock>
+        <SwoClock>31244220638101619</SwoClock>
         <DataLogMode>0</DataLogMode>
         <ItmPortsEnabled>63</ItmPortsEnabled>
         <ItmTermIOPorts>1</ItmTermIOPorts>
@@ -149,11 +149,13 @@
         <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\src\fsp_mod\startup.c}.206.5" 0 0 1 "" 0 "" 0</Bp4>
         <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\profinet_sdk\src\ext\EK52\pn_ioddevkits\src\application\App1_STANDARD\usriod_main.c}.578.3" 0 0 1 "" 0 "" 0</Bp5>
         <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\profinet_sdk\src\pns\rtos\rtos_os_2.c}.934.15" 0 0 1 "" 0 "" 0</Bp6>
-        <Bp7>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\hal_entry.c}.130.1" 0 0 1 "" 0 "" 0</Bp7>
-        <Bp8>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\hal_entry.c}.80.1" 0 0 1 "" 0 "" 0</Bp8>
-        <Bp9>_ 1 "EMUL_CODE" "{$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.291.5" 0 0 1 "" 0 "" 0</Bp9>
-        <Bp10>_ 1 "EMUL_CODE" "{$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.92.5" 0 0 1 "" 0 "" 0</Bp10>
-        <Bp11>_ 0 "EMUL_DATA" "BSP_CLOCKS_XSPI0_CLOCK_DIV0_12_5_MHZ" 0 0 0 0 4294967295</Bp11>
-        <Count>12</Count>
+        <Bp7>_ 1 "EMUL_CODE" "{$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.291.5" 0 0 1 "" 0 "" 0</Bp7>
+        <Bp8>_ 1 "EMUL_CODE" "{$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.92.5" 0 0 1 "" 0 "" 0</Bp8>
+        <Bp9>_ 0 "EMUL_DATA" "BSP_CLOCKS_XSPI0_CLOCK_DIV0_12_5_MHZ" 0 0 0 0 4294967295</Bp9>
+        <Bp10>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.276.5" 0 0 1 "" 0 "" 0</Bp10>
+        <Bp11>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.401.5" 0 0 1 "" 0 "" 0</Bp11>
+        <Bp12>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\src\fsp_mod\startup.c}.202.5" 0 0 1 "" 0 "" 0</Bp12>
+        <Bp13>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\hal_entry.c}.120.1" 0 0 1 "" 0 "" 0</Bp13>
+        <Count>14</Count>
     </Breakpoints2>
 </settings>

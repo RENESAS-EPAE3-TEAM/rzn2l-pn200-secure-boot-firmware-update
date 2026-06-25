@@ -678,6 +678,14 @@
       <description>Board support package for RZN2L - FSP Data</description>
       <originalPack>Renesas.RZN_mcu_rzn2l.3.0.0.pack</originalPack>
     </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_rsip_protected" variant="" vendor="Renesas" version="3.0.0">
+      <description>Renesas Secure IP</description>
+      <originalPack>Renesas.RZN.3.0.0.pack</originalPack>
+    </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_rsip_protected_rzn2l" variant="" vendor="Renesas" version="3.0.0">
+      <description>RSIP Engine for RZ/N2L</description>
+      <originalPack>Renesas.RZN.3.0.0.pack</originalPack>
+    </component>
   </raComponentSelection>
   <raElcConfiguration/>
   <raIcuConfiguration/>
@@ -769,10 +777,17 @@
       <property id="module.driver.xspi_qspi.cs_pulldown_lead" value="module.driver.xspi_qspi.cs_pulldown_lead.no_extension"/>
       <property id="module.driver.xspi_qspi.cs_pullup_lag" value="module.driver.xspi_qspi.cs_pullup_lag.no_extension"/>
     </module>
+    <module id="module.driver.rsip_protected.1548423046">
+      <property id="module.driver.rsip_protected.name" value="g_rsip"/>
+    </module>
+    <module id="module.driver.rsip_protected.engine.rzn2l.1033878842"/>
     <context id="_hal.0">
       <stack module="module.driver.ioport_on_ioport.0"/>
       <stack module="module.bsp.memory_config.0"/>
       <stack module="module.driver.qspi_on_xspi_qspi.958460396"/>
+      <stack module="module.driver.rsip_protected.1548423046">
+        <stack module="module.driver.rsip_protected.engine.rzn2l.1033878842" requires="module.driver.rsip_protected.requires.rsip_protected.engine"/>
+      </stack>
     </context>
     <config id="config.driver.ioport">
       <property id="config.driver.ioport.checking" value="config.driver.ioport.checking.system"/>
@@ -796,6 +811,47 @@
     </config>
     <config id="config.bsp.memory_config">
       <property id="config.bsp.memory_config.mpu_type" value="config.bsp.memory_config.mpu_type.mpu"/>
+    </config>
+    <config id="config.driver.rsip_protected">
+      <property id="config.driver.rsip_protected.param_checking_enable" value="config.driver.rsip_protected.param_checking_enable.bsp"/>
+      <property id="config.driver.rsip_protected.aes.128" value="config.driver.rsip_protected.aes.128.disabled"/>
+      <property id="config.driver.rsip_protected.aes.256" value="config.driver.rsip_protected.aes.256.disabled"/>
+      <property id="config.driver.rsip_protected.xts_aes.128" value="config.driver.rsip_protected.xts_aes.128.disabled"/>
+      <property id="config.driver.rsip_protected.xts_aes.256" value="config.driver.rsip_protected.xts_aes.256.disabled"/>
+      <property id="config.driver.rsip_protected.aes.ecb_cbc_ctr" value="config.driver.rsip_protected.aes.ecb_cbc_ctr.disabled"/>
+      <property id="config.driver.rsip_protected.aes.xts" value="config.driver.rsip_protected.aes.xts.disabled"/>
+      <property id="config.driver.rsip_protected.aes.gcm" value="config.driver.rsip_protected.aes.gcm.disabled"/>
+      <property id="config.driver.rsip_protected.aes.ccm" value="config.driver.rsip_protected.aes.ccm.disabled"/>
+      <property id="config.driver.rsip_protected.aes.cmac" value="config.driver.rsip_protected.aes.cmac.enabled"/>
+      <property id="config.driver.rsip_protected.ecc.secp256r1" value="config.driver.rsip_protected.ecc.secp256r1.enabled"/>
+      <property id="config.driver.rsip_protected.ecc.secp384r1" value="config.driver.rsip_protected.ecc.secp384r1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.secp521r1" value="config.driver.rsip_protected.ecc.secp521r1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.secp256k1" value="config.driver.rsip_protected.ecc.secp256k1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.brainpoolp256r1" value="config.driver.rsip_protected.ecc.brainpoolp256r1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.brainpoolp384r1" value="config.driver.rsip_protected.ecc.brainpoolp384r1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.brainpoolp512r1" value="config.driver.rsip_protected.ecc.brainpoolp512r1.disabled"/>
+      <property id="config.driver.rsip_protected.ecc.edwards25519" value="config.driver.rsip_protected.ecc.edwards25519.disabled"/>
+      <property id="config.driver.rsip_protected.rsa.1024" value="config.driver.rsip_protected.rsa.1024.disabled"/>
+      <property id="config.driver.rsip_protected.rsa.2048" value="config.driver.rsip_protected.rsa.2048.disabled"/>
+      <property id="config.driver.rsip_protected.rsa.3072" value="config.driver.rsip_protected.rsa.3072.disabled"/>
+      <property id="config.driver.rsip_protected.rsa.4096" value="config.driver.rsip_protected.rsa.4096.disabled"/>
+      <property id="config.driver.rsip_protected.sha1" value="config.driver.rsip_protected.sha1.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.224" value="config.driver.rsip_protected.sha2.224.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.256" value="config.driver.rsip_protected.sha2.256.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.384" value="config.driver.rsip_protected.sha2.384.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.512" value="config.driver.rsip_protected.sha2.512.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.512_224" value="config.driver.rsip_protected.sha2.512_224.enabled"/>
+      <property id="config.driver.rsip_protected.sha2.512_256" value="config.driver.rsip_protected.sha2.512_256.enabled"/>
+      <property id="config.driver.rsip_protected.hmac.sha1" value="config.driver.rsip_protected.hmac.sha1.disabled"/>
+      <property id="config.driver.rsip_protected.hmac.sha224" value="config.driver.rsip_protected.hmac.sha224.disabled"/>
+      <property id="config.driver.rsip_protected.hmac.sha256" value="config.driver.rsip_protected.hmac.sha256.disabled"/>
+      <property id="config.driver.rsip_protected.hmac.sha384" value="config.driver.rsip_protected.hmac.sha384.disabled"/>
+      <property id="config.driver.rsip_protected.hmac.sha512" value="config.driver.rsip_protected.hmac.sha512.disabled"/>
+      <property id="config.driver.rsip_protected.kdf.sha2.256" value="config.driver.rsip_protected.kdf.sha2.256.disabled"/>
+      <property id="config.driver.rsip_protected.kdf.sha2.384" value="config.driver.rsip_protected.kdf.sha2.384.disabled"/>
+      <property id="config.driver.rsip_protected.kdf.hmac.sha256" value="config.driver.rsip_protected.kdf.hmac.sha256.disabled"/>
+      <property id="config.driver.rsip_protected.kdf.hmac.sha384" value="config.driver.rsip_protected.kdf.hmac.sha384.disabled"/>
+      <property id="config.driver.rsip_protected.kdf.hmac.sha512" value="config.driver.rsip_protected.kdf.hmac.sha512.disabled"/>
     </config>
   </raModuleConfiguration>
   <raPinConfiguration>

@@ -1,7 +1,10 @@
+#include "app_manifest_abi.h"
 #include "hal_data.h"
 #include "loader_table.h"
 #include "r_xspi_qspi.h"
 #include "r_spi_flash_api.h"
+#include "secure_app_verify.h"
+#include "secure_ssbl_config.h"
 
 FSP_CPP_HEADER
 void R_BSP_WarmStart(bsp_warm_start_event_t event) BSP_PLACE_IN_SECTION(".warm_start");
@@ -11,28 +14,6 @@ extern bsp_leds_t g_bsp_leds;
 extern void bsp_copy_multibyte(uintptr_t * src, uintptr_t * dst, uintptr_t bytesize);
 extern const loader_table table[TABLE_ENTRY_NUM];
 extern void R_BSP_CacheCleanInvalidateAll(void);
-
-/*--- Application image manifest (must match App's src/app_manifest.c) ------*/
-#define APP_MANIFEST_ADDR     (0x60100050u)
-#define APP_MANIFEST_MAGIC    (0x50415A52u)  /* 'RZAP' */
-#define APP_MANIFEST_ENTRIES  (9)
-
-typedef struct
-{
-    uint32_t src;
-    uint32_t dst;
-    uint32_t size;
-    uint32_t flags;          /* bit0 = enable */
-} app_manifest_entry_t;
-
-typedef struct
-{
-    uint32_t              magic;
-    uint32_t              entry_count;
-    uint32_t              entry_point;
-    uint32_t              reserved;
-    app_manifest_entry_t  entries[APP_MANIFEST_ENTRIES];
-} app_manifest_t;
 
 /* Ported from rzn2l_xspi_boot: SDRAM (W9825G6KH-6) controller initialization.
  * Runs in the Loader (SSBL) so that the Application, once copied to SystemRAM
@@ -71,6 +52,23 @@ void hal_entry(void)
     pin_level = R_BSP_PortRead(BSP_IO_REGION_SAFE, BSP_IO_PORT_18);
     R_BSP_PortWrite(BSP_IO_REGION_SAFE, BSP_IO_PORT_18, (pin_level | 1U << 2));
 
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
+    if (SECURE_APP_VERIFY_OK != secure_app_verify_package())
+    {
+        while (1)
+        {
+            ;
+        }
+    }
+
+  #if !SSBL_CFG_SECURE_PACKAGE_DEPLOY_ENABLE
+    while (1)
+    {
+        ;
+    }
+  #endif
+#endif
+
     /* Read the App's manifest from the well-known flash address. The App's
      * ICF places .app_manifest at APP_MANIFEST_ADDR and fills src/dst/size
      * from source-compatible App block pairs such as USER_PRG_RBLOCK/WBLOCK,
@@ -88,7 +86,7 @@ void hal_entry(void)
         for (uint32_t i = 0; i < count; i++)
         {
             const app_manifest_entry_t * e = &manifest->entries[i];
-            if ((e->flags & 0x1u) && (e->size != 0u))
+            if ((e->flags & APP_MANIFEST_ENTRY_FLAG_ENABLE) && (e->size != 0u))
             {
                 bsp_copy_multibyte((uintptr_t *)(uintptr_t)e->src,
                                    (uintptr_t *)(uintptr_t)e->dst,
@@ -100,6 +98,7 @@ void hal_entry(void)
     }
     else
     {
+#if SSBL_CFG_LEGACY_TABLE_FALLBACK_ENABLE
         /* Fall back to the static loader_table (kept for backwards-compat /
          * single-image debug builds). */
         for (uint8_t table_num = 0; table_num < TABLE_ENTRY_NUM; table_num++)
@@ -110,6 +109,12 @@ void hal_entry(void)
             }
         }
         app_prg = (void(*)(void))table[0].dst;
+#else
+        while (1)
+        {
+            ;
+        }
+#endif
     }
 
     /* Ensuring data-changing */

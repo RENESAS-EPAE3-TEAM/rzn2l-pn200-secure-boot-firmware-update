@@ -3,9 +3,18 @@
 #define COMMON_DATA_H_
 #include <stdint.h>
 #include "bsp_api.h"
+#include "r_rsip.h"
+#include "r_rsip_api.h"
 #include "r_ioport.h"
 #include "bsp_pin_cfg.h"
 FSP_HEADER
+/** RSIP Instance. */
+extern const rsip_instance_t g_rsip;
+
+/** Access the RSIP instance using these structures when calling API functions directly (::p_api is not used). */
+extern rsip_instance_ctrl_t g_rsip_ctrl;
+extern const rsip_cfg_t g_rsip_cfg;
+
 #define IOPORT_CFG_NAME g_bsp_pin_cfg
 #define IOPORT_CFG_OPEN R_IOPORT_Open
 #define IOPORT_CFG_CTRL g_ioport_ctrl
