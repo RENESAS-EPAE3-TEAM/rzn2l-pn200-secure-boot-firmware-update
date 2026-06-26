@@ -3,6 +3,8 @@
 #include "loader_table.h"
 #include "r_xspi_qspi.h"
 #include "r_spi_flash_api.h"
+#include "secure_app_deploy.h"
+#include "secure_app_package.h"
 #include "secure_app_verify.h"
 #include "secure_ssbl_config.h"
 
@@ -66,8 +68,16 @@ void hal_entry(void)
     {
         ;
     }
+#else
+    if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
+    {
+        while (1)
+        {
+            ;
+        }
+    }
   #endif
-#endif
+#else
 
     /* Read the App's manifest from the well-known flash address. The App's
      * ICF places .app_manifest at APP_MANIFEST_ADDR and fills src/dst/size
@@ -116,6 +126,7 @@ void hal_entry(void)
         }
 #endif
     }
+#endif
 
     /* Ensuring data-changing */
     __asm volatile("dsb");

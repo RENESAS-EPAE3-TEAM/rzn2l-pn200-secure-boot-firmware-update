@@ -3710,6 +3710,12 @@
             <name>$PROJ_DIR$\src\app_manifest_abi.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\secure_app_deploy.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\secure_app_deploy.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\secure_app_package.h</name>
         </file>
         <file>
