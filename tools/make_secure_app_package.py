@@ -83,6 +83,40 @@ class CodeCertHeader:
     opts_info: int
 
 
+@dataclass(frozen=True)
+class SecureEntry:
+    segment_id: int
+    flags: int
+    src_offset: int
+    dst_addr: int
+    file_size: int
+    mem_size: int
+    load_attr: int
+    reserved: int
+    sha256_words: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class SecureManifest:
+    magic: int
+    format_version: int
+    header_size: int
+    manifest_size: int
+    package_version: int
+    package_flags: int
+    package_size: int
+    payload_offset: int
+    payload_size: int
+    segment_count: int
+    entry_point: int
+    image_base_addr: int
+    app_manifest_offset: int
+    signed_region_offset: int
+    signed_region_size: int
+    header_crc32: int
+    entries: list[SecureEntry]
+
+
 def parse_int(value: str) -> int:
     return int(value, 0)
 
@@ -221,6 +255,157 @@ def make_secure_manifest(
     return header + bytes(secure_entries), payload_offset
 
 
+def parse_secure_manifest(body: bytes) -> SecureManifest:
+    if len(body) < SECURE_MANIFEST_HEADER_SIZE:
+        raise ValueError("package body is too small to contain a secure manifest header")
+
+    header_values = struct.unpack_from("<IIIIIIIIIIIIIIII", body, 0)
+    (
+        magic,
+        format_version,
+        header_size,
+        manifest_size,
+        package_version,
+        package_flags,
+        package_size,
+        payload_offset,
+        payload_size,
+        segment_count,
+        entry_point,
+        image_base_addr,
+        app_manifest_offset,
+        signed_region_offset,
+        signed_region_size,
+        header_crc32,
+    ) = header_values
+
+    if magic != SECURE_MANIFEST_MAGIC:
+        raise ValueError(f"secure manifest magic mismatch: 0x{magic:08X}")
+    if format_version != SECURE_MANIFEST_VERSION:
+        raise ValueError(f"secure manifest version mismatch: 0x{format_version:08X}")
+    if header_size != SECURE_MANIFEST_HEADER_SIZE:
+        raise ValueError(f"secure manifest header_size mismatch: {header_size}")
+    if segment_count > APP_MANIFEST_MAX_ENTRIES:
+        raise ValueError(f"secure manifest segment_count is too large for PN2.0 ABI: {segment_count}")
+
+    expected_manifest_size = SECURE_MANIFEST_HEADER_SIZE + segment_count * SECURE_MANIFEST_ENTRY_SIZE
+    if manifest_size != expected_manifest_size:
+        raise ValueError(f"secure manifest_size mismatch: expected {expected_manifest_size}, got {manifest_size}")
+    if manifest_size > len(body):
+        raise ValueError("secure manifest extends outside the package body")
+    if package_size != len(body):
+        raise ValueError(f"package_size mismatch: expected {len(body)}, got {package_size}")
+    if payload_offset < manifest_size or payload_offset > package_size:
+        raise ValueError("payload_offset is outside the package body")
+    if payload_size != package_size - payload_offset:
+        raise ValueError("payload_size does not match package_size - payload_offset")
+    if signed_region_offset != 0 or signed_region_size != package_size:
+        raise ValueError("signed region does not cover the whole package body")
+
+    crc_input = bytearray(body[:manifest_size])
+    struct.pack_into("<I", crc_input, SECURE_MANIFEST_HEADER_SIZE - 4, 0)
+    calculated_crc = zlib.crc32(crc_input) & 0xFFFFFFFF
+    if calculated_crc != header_crc32:
+        raise ValueError(f"secure manifest crc mismatch: expected 0x{header_crc32:08X}, got 0x{calculated_crc:08X}")
+
+    entries: list[SecureEntry] = []
+    entry_offset = SECURE_MANIFEST_HEADER_SIZE
+    for _ in range(segment_count):
+        values = struct.unpack_from("<IIIIIIII8I", body, entry_offset)
+        entries.append(SecureEntry(*values[:8], tuple(values[8:])))
+        entry_offset += SECURE_MANIFEST_ENTRY_SIZE
+
+    return SecureManifest(*header_values, entries)
+
+
+def validate_secure_manifest_against_legacy(body: bytes, manifest: SecureManifest) -> LegacyManifest:
+    legacy_offset = manifest.payload_offset + manifest.app_manifest_offset
+    legacy_manifest = parse_legacy_manifest(body, legacy_offset)
+    active_entries = [entry for entry in legacy_manifest.entries if (entry.flags & SEGMENT_FLAG_ENABLE) and entry.size]
+
+    if legacy_manifest.entry_point != manifest.entry_point:
+        raise ValueError(
+            "legacy entry_point mismatch: "
+            f"expected {hex32(manifest.entry_point)}, got {hex32(legacy_manifest.entry_point)}"
+        )
+    if len(active_entries) != manifest.segment_count:
+        raise ValueError(
+            "legacy active segment count mismatch: "
+            f"expected {manifest.segment_count}, got {len(active_entries)}"
+        )
+
+    secure_entries = {entry.segment_id: entry for entry in manifest.entries if entry.flags & SEGMENT_FLAG_ENABLE}
+    for legacy_entry in active_entries:
+        secure_entry = secure_entries.get(legacy_entry.segment_id)
+        if secure_entry is None:
+            raise ValueError(f"secure manifest is missing segment {legacy_entry.segment_id}")
+
+        image_offset = legacy_entry.src - manifest.image_base_addr
+        expected_src_offset = manifest.payload_offset + image_offset
+        if legacy_entry.src < manifest.image_base_addr:
+            raise ValueError(f"legacy segment {legacy_entry.segment_id} source is below image_base")
+        if expected_src_offset + legacy_entry.size > manifest.package_size:
+            raise ValueError(f"legacy segment {legacy_entry.segment_id} source range is outside package body")
+
+        if secure_entry.src_offset != expected_src_offset:
+            raise ValueError(f"segment {legacy_entry.segment_id} src_offset mismatch")
+        if secure_entry.dst_addr != legacy_entry.dst:
+            raise ValueError(f"segment {legacy_entry.segment_id} dst_addr mismatch")
+        if secure_entry.file_size != legacy_entry.size or secure_entry.mem_size != legacy_entry.size:
+            raise ValueError(f"segment {legacy_entry.segment_id} size mismatch")
+
+        payload = body[secure_entry.src_offset:secure_entry.src_offset + secure_entry.file_size]
+        digest_words = struct.unpack("<8I", hashlib.sha256(payload).digest())
+        if secure_entry.sha256_words != digest_words:
+            raise ValueError(f"segment {legacy_entry.segment_id} sha256 mismatch")
+
+    return legacy_manifest
+
+
+def inspect_package_body(body: bytes, package_base: int, code_cert: bytes | None, summary_out: Path | None) -> None:
+    manifest = parse_secure_manifest(body)
+    legacy_manifest = validate_secure_manifest_against_legacy(body, manifest)
+    body_addr = package_base + TOTAL_CERT_SIZE
+
+    if code_cert is not None:
+        validate_code_cert_layout(parse_code_cert_header(code_cert), body_addr, len(body))
+
+    summary = {
+        "manifest_magic": "RZSM",
+        "package_size": manifest.package_size,
+        "payload_offset": manifest.payload_offset,
+        "payload_size": manifest.payload_size,
+        "entry_point": hex32(manifest.entry_point),
+        "image_base": hex32(manifest.image_base_addr),
+        "package_base": hex32(package_base),
+        "body_addr": hex32(body_addr),
+        "body_sha256": sha256_hex(body),
+        "segments": [
+            {
+                "segment_id": entry.segment_id,
+                "name": SEGMENT_NAMES[entry.segment_id] if entry.segment_id < len(SEGMENT_NAMES) else f"SEGMENT_{entry.segment_id}",
+                "src_offset_in_body": hex32(entry.src_offset),
+                "dst": hex32(entry.dst_addr),
+                "file_size": entry.file_size,
+                "mem_size": entry.mem_size,
+                "flags": hex32(entry.flags),
+            }
+            for entry in manifest.entries
+        ],
+    }
+
+    if summary_out:
+        summary_out.parent.mkdir(parents=True, exist_ok=True)
+        summary_out.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+    print(f"inspect ok:       RZSM package body ({len(body)} bytes)")
+    print(f"body address:     {hex32(body_addr)}")
+    print(f"segments:         {manifest.segment_count}")
+    print(f"entry point:      {hex32(legacy_manifest.entry_point)}")
+    if summary_out:
+        print(f"summary:          {summary_out}")
+
+
 def write_json_summary(
     output_path: Path,
     legacy_manifest: LegacyManifest,
@@ -322,13 +507,15 @@ def resolve_body_out(body_out: Path | None, package_out: Path | None) -> Path | 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create PN2.0 secure App manifest/body/signed package")
-    parser.add_argument("--app-bin", required=True, type=Path, help="Input PN2.0 App raw binary")
-    parser.add_argument("--manifest-out", required=True, type=Path, help="Output secure manifest binary")
+    parser.add_argument("--app-bin", type=Path, help="Input PN2.0 App raw binary")
+    parser.add_argument("--manifest-out", type=Path, help="Output secure manifest binary")
     parser.add_argument("--body-out", type=Path, help="Optional output package body: secure manifest + padding + App raw binary")
     parser.add_argument("--package-out", type=Path, help="Legacy alias for --body-out")
     parser.add_argument("--key-cert", type=Path, help="Input Key Certificate generated by the Renesas signing flow")
     parser.add_argument("--code-cert", type=Path, help="Input Code Certificate generated by the Renesas signing flow")
     parser.add_argument("--signed-package-out", type=Path, help="Output signed package: Key Cert + Code Cert + package body")
+    parser.add_argument("--inspect-body", type=Path, help="Inspect and validate an existing package body")
+    parser.add_argument("--inspect-signed-package", type=Path, help="Inspect and validate an existing signed package")
     parser.add_argument("--summary-out", type=Path, help="Optional JSON summary output")
     parser.add_argument("--image-base", type=parse_int, default=0x60100050, help="Link-time xSPI base address of the App image")
     parser.add_argument("--package-base", type=parse_int, default=0x60100050, help="xSPI base address of the complete signed package")
@@ -342,6 +529,28 @@ def main() -> int:
         help="Do not check Code Certificate dest_addr/img_size against the generated body layout",
     )
     args = parser.parse_args()
+
+    if args.inspect_body and args.inspect_signed_package:
+        raise ValueError("--inspect-body and --inspect-signed-package are mutually exclusive")
+
+    if args.inspect_body or args.inspect_signed_package:
+        if args.app_bin or args.manifest_out or args.body_out or args.package_out or args.signed_package_out:
+            raise ValueError("inspect mode cannot be combined with generation outputs")
+        if args.inspect_body:
+            body = args.inspect_body.read_bytes()
+            code_cert = args.code_cert.read_bytes() if args.code_cert else None
+        else:
+            signed_package = args.inspect_signed_package.read_bytes()
+            if len(signed_package) <= TOTAL_CERT_SIZE:
+                raise ValueError("signed package is too small")
+            code_cert = signed_package[KEY_CERT_SIZE:TOTAL_CERT_SIZE]
+            body = signed_package[TOTAL_CERT_SIZE:]
+
+        inspect_package_body(body, args.package_base, code_cert, args.summary_out)
+        return 0
+
+    if args.app_bin is None or args.manifest_out is None:
+        raise ValueError("--app-bin and --manifest-out are required in generation mode")
 
     body_out = resolve_body_out(args.body_out, args.package_out)
     cert_inputs = [args.key_cert, args.code_cert, args.signed_package_out]

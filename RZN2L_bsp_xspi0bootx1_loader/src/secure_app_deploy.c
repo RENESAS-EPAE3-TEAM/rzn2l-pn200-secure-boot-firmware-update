@@ -46,6 +46,30 @@ static const secure_app_memory_window_t g_secure_app_allowed_windows[] =
     { SECURE_APP_SEGMENT_ID_SHARED_NONCACHE_BUFFER,   SECURE_APP_SHARED_NONCACHE_START,         SECURE_APP_SHARED_NONCACHE_END_EXCLUSIVE },
 };
 
+volatile secure_app_deploy_status_t g_secure_app_deploy_last_status;
+
+static void deploy_status_set(secure_app_deploy_result_t result,
+                              secure_app_deploy_stage_t stage,
+                              uint32_t segment_index,
+                              uint32_t segment_id,
+                              uint32_t address,
+                              uint32_t size,
+                              uint32_t detail)
+{
+    g_secure_app_deploy_last_status.result        = (uint32_t) result;
+    g_secure_app_deploy_last_status.stage         = (uint32_t) stage;
+    g_secure_app_deploy_last_status.segment_index = segment_index;
+    g_secure_app_deploy_last_status.segment_id    = segment_id;
+    g_secure_app_deploy_last_status.address       = address;
+    g_secure_app_deploy_last_status.size          = size;
+    g_secure_app_deploy_last_status.detail        = detail;
+}
+
+const volatile secure_app_deploy_status_t * secure_app_deploy_last_status(void)
+{
+    return &g_secure_app_deploy_last_status;
+}
+
 static int range_inside(uint32_t base, uint32_t size, uint32_t start, uint32_t end_exclusive)
 {
     uint32_t end = base + size;
@@ -159,6 +183,13 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
     if ((app_manifest_end < manifest->header.app_manifest_offset) ||
         (app_manifest_end > manifest->header.payload_size))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                          SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                          0u,
+                          0u,
+                          manifest->header.app_manifest_offset,
+                          (uint32_t) sizeof(app_manifest_t),
+                          1u);
         return 0;
     }
 
@@ -170,6 +201,13 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
         (legacy_manifest->entry_count > APP_MANIFEST_ENTRIES) ||
         (legacy_manifest->entry_point != manifest->header.entry_point))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                          SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                          0u,
+                          0u,
+                          (uint32_t)(uintptr_t) legacy_manifest,
+                          legacy_manifest->entry_point,
+                          2u);
         return 0;
     }
 
@@ -187,6 +225,13 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
 
         if (legacy_entry->src < manifest->header.image_base_addr)
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                              SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                              i,
+                              i,
+                              legacy_entry->src,
+                              legacy_entry->size,
+                              3u);
             return 0;
         }
 
@@ -194,6 +239,13 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
         expected_src_offset = manifest->header.payload_offset + image_offset;
         if (expected_src_offset < manifest->header.payload_offset)
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                              SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                              i,
+                              i,
+                              expected_src_offset,
+                              legacy_entry->size,
+                              4u);
             return 0;
         }
 
@@ -204,13 +256,32 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
             (secure_entry->mem_size != legacy_entry->size) ||
             (secure_entry->src_offset != expected_src_offset))
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                              SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                              i,
+                              i,
+                              legacy_entry->dst,
+                              legacy_entry->size,
+                              5u);
             return 0;
         }
 
         active_legacy_count++;
     }
 
-    return active_legacy_count == manifest->header.segment_count;
+    if (active_legacy_count != manifest->header.segment_count)
+    {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                          SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                          active_legacy_count,
+                          0u,
+                          0u,
+                          manifest->header.segment_count,
+                          6u);
+        return 0;
+    }
+
+    return 1;
 }
 
 static secure_app_deploy_result_t validate_header(const secure_app_manifest_header_t * header)
@@ -219,6 +290,13 @@ static secure_app_deploy_result_t validate_header(const secure_app_manifest_head
 
     if (SECURE_APP_MANIFEST_MAGIC != header->magic)
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_HEADER,
+                          SECURE_APP_DEPLOY_STAGE_HEADER,
+                          0u,
+                          0u,
+                          (uint32_t)(uintptr_t) header,
+                          header->magic,
+                          1u);
         return SECURE_APP_DEPLOY_ERR_HEADER;
     }
 
@@ -227,6 +305,13 @@ static secure_app_deploy_result_t validate_header(const secure_app_manifest_head
         (0u == header->segment_count) ||
         (header->segment_count > SECURE_APP_MANIFEST_MAX_SEGMENTS))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_HEADER,
+                          SECURE_APP_DEPLOY_STAGE_HEADER,
+                          0u,
+                          0u,
+                          header->segment_count,
+                          header->format_version,
+                          2u);
         return SECURE_APP_DEPLOY_ERR_HEADER;
     }
 
@@ -240,6 +325,13 @@ static secure_app_deploy_result_t validate_header(const secure_app_manifest_head
         (0u != header->signed_region_offset) ||
         (header->signed_region_size != header->package_size))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_HEADER,
+                          SECURE_APP_DEPLOY_STAGE_HEADER,
+                          0u,
+                          0u,
+                          header->payload_offset,
+                          header->package_size,
+                          3u);
         return SECURE_APP_DEPLOY_ERR_HEADER;
     }
 
@@ -248,6 +340,13 @@ static secure_app_deploy_result_t validate_header(const secure_app_manifest_head
                       SECURE_APP_FLASH_BANK_START,
                       SECURE_APP_FLASH_BANK_END_EXCLUSIVE))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_PACKAGE_RANGE,
+                          SECURE_APP_DEPLOY_STAGE_PACKAGE_RANGE,
+                          0u,
+                          0u,
+                          SECURE_APP_PACKAGE_BODY_ADDR,
+                          header->package_size,
+                          1u);
         return SECURE_APP_DEPLOY_ERR_PACKAGE_RANGE;
     }
 
@@ -261,8 +360,23 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
 
     if (NULL == manifest)
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_NULL,
+                          SECURE_APP_DEPLOY_STAGE_IDLE,
+                          0u,
+                          0u,
+                          0u,
+                          0u,
+                          1u);
         return SECURE_APP_DEPLOY_ERR_NULL;
     }
+
+    deploy_status_set(SECURE_APP_DEPLOY_OK,
+                      SECURE_APP_DEPLOY_STAGE_HEADER,
+                      0u,
+                      0u,
+                      (uint32_t)(uintptr_t) manifest,
+                      0u,
+                      0u);
 
     result = validate_header(&manifest->header);
     if (SECURE_APP_DEPLOY_OK != result)
@@ -272,6 +386,13 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
 
     if (!segment_destination_allowed(SECURE_APP_SEGMENT_ID_LDR_PRG, manifest->header.entry_point, 1u))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_ENTRY_POINT,
+                          SECURE_APP_DEPLOY_STAGE_ENTRY_POINT,
+                          0u,
+                          SECURE_APP_SEGMENT_ID_LDR_PRG,
+                          manifest->header.entry_point,
+                          1u,
+                          1u);
         return SECURE_APP_DEPLOY_ERR_ENTRY_POINT;
     }
 
@@ -294,20 +415,60 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
             (entry->file_size != entry->mem_size) ||
             (0u == entry->file_size))
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_FLAGS,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->file_size,
+                              entry->flags);
             return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
         }
 
-        if (!segment_source_allowed(&manifest->header, entry) ||
-            !segment_destination_allowed(entry->segment_id, entry->dst_addr, entry->mem_size))
+        if (!segment_source_allowed(&manifest->header, entry))
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+                              i,
+                              entry->segment_id,
+                              SECURE_APP_PACKAGE_BODY_ADDR + entry->src_offset,
+                              entry->file_size,
+                              entry->src_offset);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+        }
+
+        if (!segment_destination_allowed(entry->segment_id, entry->dst_addr, entry->mem_size))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_DESTINATION,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->mem_size,
+                              1u);
             return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
         }
 
         if (later_enabled_segments_overlap(manifest, i))
         {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_OVERLAP,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_OVERLAP,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->mem_size,
+                              1u);
             return SECURE_APP_DEPLOY_ERR_SEGMENT_OVERLAP;
         }
     }
+
+    deploy_status_set(SECURE_APP_DEPLOY_OK,
+                      SECURE_APP_DEPLOY_STAGE_DONE,
+                      manifest->header.segment_count,
+                      0u,
+                      manifest->header.entry_point,
+                      manifest->header.package_size,
+                      0u);
 
     return SECURE_APP_DEPLOY_OK;
 }
@@ -324,6 +485,13 @@ secure_app_deploy_result_t secure_app_deploy_copy(const secure_app_manifest_t * 
 
     if ((NULL == copy_func) || (NULL == p_entry))
     {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_NULL,
+                          SECURE_APP_DEPLOY_STAGE_COPY,
+                          0u,
+                          0u,
+                          0u,
+                          0u,
+                          2u);
         return SECURE_APP_DEPLOY_ERR_NULL;
     }
 
@@ -341,11 +509,25 @@ secure_app_deploy_result_t secure_app_deploy_copy(const secure_app_manifest_t * 
             continue;
         }
 
+        deploy_status_set(SECURE_APP_DEPLOY_OK,
+                          SECURE_APP_DEPLOY_STAGE_COPY,
+                          i,
+                          entry->segment_id,
+                          entry->dst_addr,
+                          entry->file_size,
+                          entry->src_offset);
         copy_func((uintptr_t *)(uintptr_t)(body_addr + entry->src_offset),
                   (uintptr_t *)(uintptr_t)entry->dst_addr,
                   (uintptr_t) entry->file_size);
     }
 
     *p_entry = (void (*)(void))(uintptr_t)manifest->header.entry_point;
+    deploy_status_set(SECURE_APP_DEPLOY_OK,
+                      SECURE_APP_DEPLOY_STAGE_DONE,
+                      manifest->header.segment_count,
+                      0u,
+                      manifest->header.entry_point,
+                      manifest->header.package_size,
+                      1u);
     return SECURE_APP_DEPLOY_OK;
 }
