@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <raConfiguration version="11">
   <generalSettings>
-    <option key="#Board#" value="board.rzn2lrsk.xspi0_x1"/>
+    <option key="#Board#" value="board.custom"/>
     <option key="CPU" value="RZN2L"/>
     <option key="Core" value="CR52_0"/>
-    <option key="#TargetName#" value="R9A07G084M04GBG"/>
+    <option key="#TargetName#" value="R9A07G084M08GBG"/>
     <option key="#TargetARCHITECTURE#" value="cortex-r52"/>
-    <option key="#DeviceCommand#" value="R9A07G084M04"/>
+    <option key="#DeviceCommand#" value="R9A07G084M08"/>
     <option key="#RTOS#" value="_none"/>
     <option key="#pinconfiguration#" value="R9A07G084M04GBG.pincfg"/>
     <option key="#FSPVersion#" value="3.0.0"/>
@@ -141,8 +141,8 @@
       <configSetting altId="p20_4.output.low" configurationId="p20_4"/>
       <configSetting altId="p22_1.output.low" configurationId="p22_1"/>
       <configSetting altId="p22_3.output.low" configurationId="p22_3"/>
-      <configSetting altId="sci0.rxd_miso0.p16_6" configurationId="sci0.rxd_miso0" peripheral="SCI0"/>
-      <configSetting altId="sci0.txd_mosi0.p16_5" configurationId="sci0.txd_mosi0" peripheral="SCI0"/>
+      <configSetting altId="sci0.rxd_miso0.p16_6" configurationId="sci0.rxd_miso0" isUsedByDriver="true" peripheral="SCI0"/>
+      <configSetting altId="sci0.txd_mosi0.p16_5" configurationId="sci0.txd_mosi0" isUsedByDriver="true" peripheral="SCI0"/>
       <configSetting altId="sci3.rxd_miso3.p17_7" configurationId="sci3.rxd_miso3" peripheral="SCI3"/>
       <configSetting altId="sci3.txd_mosi3.p18_0" configurationId="sci3.txd_mosi3" peripheral="SCI3"/>
       <configSetting altId="spi2.spi_miso2.p18_6" configurationId="spi2.spi_miso2" peripheral="SPI2"/>
@@ -152,21 +152,21 @@
       <configSetting altId="usb_hs.usb_ovrcur.p17_5" configurationId="usb_hs.usb_ovrcur" peripheral="USB_HS"/>
       <configSetting altId="usb_hs.usb_vbusen.p19_0" configurationId="usb_hs.usb_vbusen" peripheral="USB_HS"/>
       <configSetting altId="usb_hs.usb_vbusin.p07_4" configurationId="usb_hs.usb_vbusin" peripheral="USB_HS"/>
-      <configSetting altId="xspi0.xspi0_ckn.p14_5" configurationId="xspi0.xspi0_ckn" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_ckp.p14_6" configurationId="xspi0.xspi0_ckp" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_cs0_hash.p15_7" configurationId="xspi0.xspi0_cs0_hash" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_cs1_hash.p16_0" configurationId="xspi0.xspi0_cs1_hash" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_ds.p14_4" configurationId="xspi0.xspi0_ds" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_ecs0_hash.p14_2" configurationId="xspi0.xspi0_ecs0_hash" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io0.p14_7" configurationId="xspi0.xspi0_io0" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io1.p15_0" configurationId="xspi0.xspi0_io1" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io2.p15_1" configurationId="xspi0.xspi0_io2" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io3.p15_2" configurationId="xspi0.xspi0_io3" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_ckn.p14_5" configurationId="xspi0.xspi0_ckn" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_ckp.p14_6" configurationId="xspi0.xspi0_ckp" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_cs0_hash.p15_7" configurationId="xspi0.xspi0_cs0_hash" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_cs1_hash.p16_0" configurationId="xspi0.xspi0_cs1_hash" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_ds.p14_4" configurationId="xspi0.xspi0_ds" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_ecs0_hash.p14_2" configurationId="xspi0.xspi0_ecs0_hash" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io0.p14_7" configurationId="xspi0.xspi0_io0" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io1.p15_0" configurationId="xspi0.xspi0_io1" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io2.p15_1" configurationId="xspi0.xspi0_io2" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io3.p15_2" configurationId="xspi0.xspi0_io3" isUsedByDriver="true" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io4.p15_3" configurationId="xspi0.xspi0_io4" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io5.p15_4" configurationId="xspi0.xspi0_io5" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io6.p15_5" configurationId="xspi0.xspi0_io6" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io7.p15_6" configurationId="xspi0.xspi0_io7" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_reset0_hash.p16_1" configurationId="xspi0.xspi0_reset0_hash" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_reset0_hash.p16_1" configurationId="xspi0.xspi0_reset0_hash" isUsedByDriver="true" peripheral="XSPI0"/>
     </pincfg>
   </raPinConfiguration>
 </raConfiguration>

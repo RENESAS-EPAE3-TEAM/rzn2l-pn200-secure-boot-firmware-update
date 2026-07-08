@@ -1,7 +1,7 @@
 /* generated configuration header file - do not edit */
 #ifndef BSP_MCU_DEVICE_PN_CFG_H_
 #define BSP_MCU_DEVICE_PN_CFG_H_
-#define BSP_MCU_R9A07G084M04GBG
+#define BSP_MCU_R9A07G084M08GBG
       #define BSP_ATCM_SIZE_BYTES (131072)
       #define BSP_BTCM_SIZE_BYTES (131072)
       #define BSP_SYSTEM_RAM_SIZE_BYTES (1572864)

@@ -10,11 +10,11 @@
 
 -p
 
-C:\iar\ewarm-9.70.2\arm\config\debugger\Renesas\R9A07G084M04.ddf
+C:\iar\ewarm-9.70.2\arm\config\debugger\Renesas\R9A07G084M08.ddf
 
 --semihosting
 
---device=R9A07G084M04
+--device=R9A07G084M08
 
 --multicore_nr_of_cores=1
 

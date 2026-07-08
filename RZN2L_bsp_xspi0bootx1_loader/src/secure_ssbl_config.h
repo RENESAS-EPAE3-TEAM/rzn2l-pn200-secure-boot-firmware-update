@@ -16,7 +16,7 @@
 #endif
 
 #ifndef SSBL_CFG_DEBUG_UART_ENABLE
-#define SSBL_CFG_DEBUG_UART_ENABLE               (0u)
+#define SSBL_CFG_DEBUG_UART_ENABLE               (1u)
 #endif
 
 #endif /* SECURE_SSBL_CONFIG_H_ */

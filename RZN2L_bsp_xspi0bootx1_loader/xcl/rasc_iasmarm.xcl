@@ -1,4 +1,4 @@
 // generated extended command line file - do not edit
--D_RENESAS_RZN_
 -D_RZN_CORE=CR52_0
 -D_RZN_ORDINAL=1
+-D_RENESAS_RZN_

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <iarProjectConnection version="1.8" name="Flex Software">
     <device>
-        <name>R9A07G084M04</name>
+        <name>R9A07G084M08</name>
     </device>
     <linkerFile>
         <override>true</override>
-        <path>$PROJ_DIR$/script/fsp_xspi0_boot_loader.icf</path>
+        <path>$PROJ_DIR$/script/fsp_ram_execution.icf</path>
     </linkerFile>
     <extraOptions>
         <arg>-f "$PROJ_DIR$/xcl/rasc_iccarm"</arg>
@@ -72,19 +72,20 @@
             <path>rzn/arm/CMSIS_6/CMSIS/Core/Include/r-profile/cmsis_gcc_r.h</path>
             <path>rzn/arm/CMSIS_6/CMSIS/Core/Include/tz_context.h</path>
             <path>rzn/arm/CMSIS_6/LICENSE</path>
-            <path>rzn/board/rzn2l_rsk/board.h</path>
-            <path>rzn/board/rzn2l_rsk/board_ethernet_phy.h</path>
-            <path>rzn/board/rzn2l_rsk/board_init.c</path>
-            <path>rzn/board/rzn2l_rsk/board_init.h</path>
-            <path>rzn/board/rzn2l_rsk/board_leds.c</path>
-            <path>rzn/board/rzn2l_rsk/board_leds.h</path>
+            <path>rzn/board/custom/board.h</path>
+            <path>rzn/board/custom/board_ddr_param.h</path>
             <path>rzn/fsp/inc/api/bsp_api.h</path>
             <path>rzn/fsp/inc/api/fsp_common_api.h</path>
             <path>rzn/fsp/inc/api/r_ioport_api.h</path>
+            <path>rzn/fsp/inc/api/r_rsip_api.h</path>
             <path>rzn/fsp/inc/api/r_spi_flash_api.h</path>
+            <path>rzn/fsp/inc/api/r_transfer_api.h</path>
+            <path>rzn/fsp/inc/api/r_uart_api.h</path>
             <path>rzn/fsp/inc/fsp_features.h</path>
             <path>rzn/fsp/inc/fsp_version.h</path>
             <path>rzn/fsp/inc/instances/r_ioport.h</path>
+            <path>rzn/fsp/inc/instances/r_rsip.h</path>
+            <path>rzn/fsp/inc/instances/r_sci_uart.h</path>
             <path>rzn/fsp/inc/instances/r_xspi_qspi.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/cmsis_compiler_rz.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/cr/cmsis_cp15.h</path>
@@ -96,6 +97,7 @@
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/renesas.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/system.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/cr/startup_core.c</path>
+            <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/cr/startup_core.c.bak</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/cr/system_core.c</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/startup.c</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.c</path>
@@ -148,6 +150,318 @@
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_mcu_info.h</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_override.h</path>
             <path>rzn/fsp/src/r_ioport/r_ioport.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/primitive/r_rsip_err.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/primitive/r_rsip_reg.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/primitive/r_rsip_reg.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/primitive/r_rsip_util.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/private/r_rsip_private.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/private/r_rsip_private.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_aes.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_ecc.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_kdf.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_otf.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_pki.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_public.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_rsa.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/common/public/r_rsip_sha.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_data.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func016.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func017.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func022.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func023.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func027.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func028.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func029.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func030.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func031.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func032.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func033.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func034.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func040.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func041.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func043.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func044.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func045.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func046.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func047.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func050.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func051.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func052.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func053.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func054.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func055.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func056.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func057.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func058.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func059.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func060.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func061.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func062.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func066.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func073.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func076.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func077.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func084.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func085.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func086.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func087.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func088.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func089.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func091.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func100.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func101.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func102.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func103.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func205.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func206.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func215.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func216.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func220.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func221.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func300.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func301.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func302.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func303.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func304.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func305.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func306.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func307.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func308.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func309.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func310.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func311.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func400.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func401.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func402.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func403.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func404.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func405.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func406.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func420.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func421.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func422.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func423.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func431.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func432.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func433.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func434.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func435.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func436.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func440.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func441.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func443.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func450.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func501.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_func502.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p00.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p01.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p02.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p03.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p04.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p06.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p07.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p08.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p0b.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p0c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p0d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p0e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p0f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p10.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p15.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p16.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p17.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p18.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p19.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1b.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p1f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p20.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p21.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p24.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p25.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p29a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p29f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p29i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p29t.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p29u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p2a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p2b.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p2c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p2d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p2e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p32a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p32f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p32i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p32t.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p32u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p34a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p34f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p34i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p34t.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p34u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p36a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p36f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p36i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p36t.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p36u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p37.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p38.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p3a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p3b.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p3c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p3d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p40.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p41f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p41i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p41u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p42.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p43.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p44f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p44i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p44u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p45.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p47f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p47i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p47u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p48f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p48i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p48u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p4a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p4c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p4d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p50f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p50i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p50u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p53.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p54.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p56.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p57.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p59.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p60.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p62.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p63.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p6d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p6e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p6f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p70f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p70i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p70r.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p70s.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p70u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p75f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p75i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p75r.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p75s.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p75u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p79.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p7a.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p7b.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p7c.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p80.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p8f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p90.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p92.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p93.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p95f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p95i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p95u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p98f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p98i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p98u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p9d.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p9e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_p9f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa1f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa1i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa1u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa4f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa4i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa4u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa8.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pa9.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_paa.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pab.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb1.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb2.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb3f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb3i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb3u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb6f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb6i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb6u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb9f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb9i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pb9u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pc2f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pc2i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pc2u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe0.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe1.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe2.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe3.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe4.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5e.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5f.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5i.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5r.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5s.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe5u.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe6.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe7.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe8.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pe9.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pea.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_peb.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pec.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pedf.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pedi.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_peef.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_peei.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf0.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf1.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf3.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf4.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf5.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf6.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf7.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf8.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pf9.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/rzn2l/r_rsip_pfa.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/r_rsip_addr.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/r_rsip_primitive.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/primitive/r_rsip_primitive.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/inc/iodefine.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/inc/r_error_codes.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/inc/r_typedefs.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/otp/inc/r_otp_drv.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/otp/src/r_otp_drv.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/rsip/inc/r_cip_drv_api.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/rsip/inc/r_cip_drv_api_ext.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/rsip/src/rsip_check_param.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/rsip/src/rsip_check_param.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/rsip/src/r_cip_drv_api.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/inc/r_sb_api.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_api.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_build_config.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_cmn.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_cmn.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_cmn_drv.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_cmn_drv.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_manifest.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_manifest.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_sb.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/lib/sb_lib/src/r_sb_sb.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_hal.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_otp.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_otp.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_wrapper.c</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_wrapper.h</path>
+            <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/public/r_rsip_rzt_rzn.c</path>
+            <path>rzn/fsp/src/r_sci_uart/r_sci_uart.c</path>
             <path>rzn/fsp/src/r_xspi_qspi/r_xspi_qspi.c</path>
         </group>
         <group name="Build Configuration">
@@ -161,6 +475,8 @@
             <path>rzn_cfg/fsp_cfg/bsp/bsp_memory_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/bsp/bsp_pin_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/r_ioport_cfg.h</path>
+            <path>rzn_cfg/fsp_cfg/r_rsip_cfg.h</path>
+            <path>rzn_cfg/fsp_cfg/r_sci_uart_cfg.h</path>
         </group>
         <group name="Generated Data">
             <path>rzn_gen/bsp_clock_cfg.h</path>
@@ -175,9 +491,17 @@
             <path>rzn_gen/vector_data.h</path>
         </group>
         <group name="Program Entry">
+            <path>src/app_manifest_abi.h</path>
             <path>src/hal_entry.c</path>
             <path>src/loader_table.c</path>
             <path>src/loader_table.h</path>
+            <path>src/secure_app_deploy.c</path>
+            <path>src/secure_app_deploy.h</path>
+            <path>src/secure_app_manifest.h</path>
+            <path>src/secure_app_package.h</path>
+            <path>src/secure_app_verify.c</path>
+            <path>src/secure_app_verify.h</path>
+            <path>src/secure_ssbl_config.h</path>
         </group>
     </files>
 </iarProjectConnection>
