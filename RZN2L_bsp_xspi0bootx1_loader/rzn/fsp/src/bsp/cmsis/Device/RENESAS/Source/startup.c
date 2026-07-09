@@ -156,7 +156,7 @@ void SystemInit (void)
 #endif
 
     /* Call Post C runtime initialization hook. */
-    R_BSP_WarmStart(BSP_WARM_START_POST_C);
+    R_BSP_WarmStart(BSP_WARM_START_POST_C);   //Note, this need to be recovered.
 
 #if (1 == _RZN_ORDINAL)
  #if BSP_CFG_SEMAPHORE_ENABLE

@@ -124,11 +124,16 @@ static void ssbl_print_deploy_status(const char * label)
  **********************************************************************************************************************/
 void hal_entry(void)
 {
+  
+      /* Enable interrupt. */
+    __asm volatile ("cpsie i");
+    
     void (*app_prg)(void);
 
     /*UART open*/
     fsp_err_t err = R_SCI_UART_Open(&g_uart0_ctrl, &g_uart0_cfg);
     handle_error(err);
+    
     
     SSBL_TRACE("*** PN2.0.0 for rzn2l SSBL starting!!! ***\n");
     
@@ -310,10 +315,10 @@ void R_BSP_WarmStart (bsp_warm_start_event_t event)
          * In the split design this Loader (SSBL) executes from SystemRAM and is
          * responsible for switching the external QSPI flash to 1S-4S-4S mode
          * BEFORE jumping to the Application (which runs XIP @ 0x60100000). */
-        bsp_qspi_quad_enable();
+        //bsp_qspi_quad_enable();  //mask for the debug uart
 
         /* Initialize external SDRAM so the Application can use CS2/CS3 mirror. */
-        bsp_sdram_init();
+        //bsp_sdram_init();
     }
 }
 

@@ -5,7 +5,7 @@
 
 extern const ioport_extend_cfg_t  g_ioport_cfg_extend;
 
-
+#if 0
 const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
     {
         .pin = BSP_IO_PORT_00_PIN_0,
@@ -411,7 +411,8 @@ const ioport_cfg_t g_bsp_pin_cfg = {
     .p_extend = &g_ioport_cfg_extend,
 };
 
-const ioport_pin_cfg_t g_bsp_pin_cfg_QSPI0_data[] = {
+#else
+const ioport_pin_cfg_t g_bsp_pin_cfg_data[] = {
     {
         .pin = BSP_IO_PORT_00_PIN_0,
         .pin_cfg = ((uint32_t) IOPORT_CFG_PORT_PERI | (uint32_t) IOPORT_PIN_P000_PFC_00_ETH2_RXD3)
@@ -794,8 +795,9 @@ const ioport_pin_cfg_t g_bsp_pin_cfg_QSPI0_data[] = {
     },
 };
 
-const ioport_cfg_t g_bsp_pin_cfg_QSPI0 = {
-    .number_of_pins = sizeof(g_bsp_pin_cfg_QSPI0_data)/sizeof(ioport_pin_cfg_t),
-    .p_pin_cfg_data = &g_bsp_pin_cfg_QSPI0_data[0],
+const ioport_cfg_t g_bsp_pin_cfg = {
+    .number_of_pins = sizeof(g_bsp_pin_cfg_data)/sizeof(ioport_pin_cfg_t),
+    .p_pin_cfg_data = &g_bsp_pin_cfg_data[0],
     .p_extend = &g_ioport_cfg_extend,
 };
+#endif
