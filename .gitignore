@@ -33,6 +33,8 @@
 *.browse
 *.wsdt
 *.wspos
+*.dbgdt
+*.dnx
 *.ewt.cspy.*
 
 # IAR backup files created by the IDE / RASC
