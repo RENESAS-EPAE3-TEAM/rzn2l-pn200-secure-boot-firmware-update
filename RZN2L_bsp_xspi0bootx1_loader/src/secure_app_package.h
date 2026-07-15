@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "app_manifest_abi.h"
 #include "secure_app_manifest.h"
 
 #define SECURE_APP_PACKAGE_BASE_ADDR       (0x60100050u)
@@ -39,6 +40,11 @@ static inline const uint8_t * secure_app_code_cert_ptr(void)
 static inline const secure_app_manifest_t * secure_app_manifest_ptr(void)
 {
     return (const secure_app_manifest_t *)(uintptr_t) SECURE_APP_MANIFEST_ADDR;
+}
+
+static inline const app_manifest_t * secure_app_legacy_manifest_ptr(void)
+{
+    return (const app_manifest_t *)(uintptr_t) SECURE_APP_PACKAGE_BODY_ADDR;
 }
 
 static inline const uint8_t * secure_app_body_ptr(void)

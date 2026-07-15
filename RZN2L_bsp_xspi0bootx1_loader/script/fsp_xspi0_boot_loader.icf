@@ -90,9 +90,10 @@ else
 /* Specifies the region where the loader program (SSBL) is placed. */
 if ((isdefinedsymbol(BTCM_CR52_0_START)) || (isdefinedsymbol(BTCM_CR52_1_START)))
 {
+    define symbol PN20_SSBL_BTCM_SIZE                  = 0x00018000;
     define symbol LOADER_STACK_OFFSET                   = 0x2000;
     define symbol LOADER_STACK_ADDRESS                  = (BTCM_PRV_START + LOADER_STACK_OFFSET);
-    define symbol LOADER_STACK_END_ADDRESS              = (BTCM_PRV_START + BTCM_PRV_LENGTH - BTCM_END_ADDRESS_OFFSET);
+    define symbol LOADER_STACK_END_ADDRESS              = (BTCM_PRV_START + PN20_SSBL_BTCM_SIZE - 1);
 }
 else if (isdefinedsymbol(SYSTEM_RAM_START))
 {

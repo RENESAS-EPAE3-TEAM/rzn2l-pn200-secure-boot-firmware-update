@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "app_manifest_abi.h"
 #include "secure_app_manifest.h"
 
 typedef enum e_secure_app_deploy_result
@@ -52,6 +53,14 @@ secure_app_deploy_result_t secure_app_deploy_copy(const secure_app_manifest_t * 
                                                                     uintptr_t * dst,
                                                                     uintptr_t bytesize),
                                                   void (** p_entry)(void));
+secure_app_deploy_result_t secure_app_deploy_copy_overall_app(const app_manifest_t * manifest,
+                                                              uint32_t image_link_base,
+                                                              uint32_t image_runtime_base,
+                                                              uint32_t image_runtime_size,
+                                                              void (*copy_func)(uintptr_t * src,
+                                                                                uintptr_t * dst,
+                                                                                uintptr_t bytesize),
+                                                              void (** p_entry)(void));
 const volatile secure_app_deploy_status_t * secure_app_deploy_last_status(void);
 
 #endif /* SECURE_APP_DEPLOY_H_ */

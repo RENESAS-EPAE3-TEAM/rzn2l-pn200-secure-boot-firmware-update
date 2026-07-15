@@ -6,13 +6,24 @@
 
 `make_secure_app_package.py` 用于创建 PN2.0 Secure App 相关文件，包括：
 
-- Secure Manifest
+- Legacy RZAP manifest copy 或 Secure Manifest
 - Package Body
 - Signed Package
 
-脚本会读取 PN2.0 App raw binary，并解析其中已有的 legacy `RZAP app_manifest_t`，然后生成 secure manifest。生成过程中会把原始 manifest 转换为使用 package-relative source offset 的 secure manifest，并为每个有效 segment 计算 SHA-256 [1]。
+脚本会读取 PN2.0 App raw binary，并解析其中已有的 legacy `RZAP app_manifest_t`。
 
-生成的数据结构如下：
+当前默认模式保留方案 A：`--scheme rzsm`。该模式会把原始 manifest 转换为使用 package-relative source offset 的 secure manifest，并为每个有效 segment 计算 SHA-256 [1]。
+
+如果需要走方案 B，可显式指定 `--scheme overall-app`。该模式不生成自定义 RZSM package body，而是把 PN2.0 App raw binary 作为一个连续 overall App body，由 Renesas Key Certificate + Code Certificate 对整体 App 验签。
+
+方案 B 生成的数据结构如下：
+
+```text
+Package Body = PN2.0 App raw binary
+             = legacy RZAP manifest + App raw image
+```
+
+方案 A/RZSM 生成的数据结构如下：
 
 ```text
 Package Body = Secure Manifest + padding + PN2.0 App raw binary
@@ -50,7 +61,7 @@ python make_secure_app_package.py [参数]
 
 ---
 
-## 3. 最小用法：只生成 Secure Manifest
+## 3. 最小用法：方案 A/RZSM body
 
 最小必需参数包括：
 
@@ -62,7 +73,8 @@ python make_secure_app_package.py [参数]
 ```bash
 python3 make_secure_app_package.py \
   --app-bin app_raw.bin \
-  --manifest-out secure_manifest.bin
+  --manifest-out secure_manifest.bin \
+  --body-out package_body.bin
 ```
 
 说明：
@@ -71,14 +83,25 @@ python3 make_secure_app_package.py \
 |---|---|---|
 | `--app-bin` | 是 | 输入 PN2.0 App raw binary |
 | `--manifest-out` | 是 | 输出 Secure Manifest binary |
+| `--body-out` | 否 | 输出方案 A/RZSM package body |
 
 执行后会生成：
 
 ```text
 secure_manifest.bin
+package_body.bin
 ```
 
-脚本会打印生成的 manifest 路径、大小、body address、segment 数量和 entry point 等信息 [1]。
+脚本会打印 scheme、segment 数量和 entry point 等信息 [1]。
+
+如需生成方案 B 整体 App body，使用：
+
+```bash
+python3 make_secure_app_package.py \
+  --scheme overall-app \
+  --app-bin app_raw.bin \
+  --body-out package_body.bin
+```
 
 ---
 

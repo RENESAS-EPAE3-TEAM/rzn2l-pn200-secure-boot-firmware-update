@@ -2,19 +2,52 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include "secure_ssbl_config.h"
 #include "app_manifest_abi.h"
 #include "secure_app_package.h"
+#include "sio_char.h"
+#include <stdio.h>
+
+#if SSBL_CFG_DEBUG_UART_ENABLE
+#define SSBL_DEPLOY(...) printf(__VA_ARGS__)
+
+static void ssbl_deploy_print_segment(uint32_t segment_index,
+                                      const app_manifest_entry_t * entry,
+                                      uint32_t runtime_src)
+{
+    const uint8_t * source = (const uint8_t *)(uintptr_t) runtime_src;
+    uint32_t byte_count = (entry->size < 16u) ? entry->size : 16u;
+    uint32_t byte_index;
+
+    SSBL_DEPLOY("[SSBL][DEPLOY][SEG%lu] link_src=0x%08lx runtime_src=0x%08lx dst=0x%08lx size=0x%08lx\n",
+                (unsigned long) segment_index,
+                (unsigned long) entry->src,
+                (unsigned long) runtime_src,
+                (unsigned long) entry->dst,
+                (unsigned long) entry->size);
+    SSBL_DEPLOY("[SSBL][DEPLOY][SEG%lu] first%lu:",
+                (unsigned long) segment_index,
+                (unsigned long) byte_count);
+    for (byte_index = 0u; byte_index < byte_count; byte_index++)
+    {
+        SSBL_DEPLOY(" %02x", (unsigned int) source[byte_index]);
+    }
+    SSBL_DEPLOY("\n");
+}
+#else
+#define SSBL_DEPLOY(...) ((void) 0)
+#define ssbl_deploy_print_segment(...) ((void) 0)
+#endif
 
 #define SECURE_APP_FLASH_BANK_START              (0x60000000u)
 #define SECURE_APP_FLASH_BANK_END_EXCLUSIVE      (0x64000000u)
 
 #define SECURE_APP_ATCM_START                    (0x00000000u)
 #define SECURE_APP_ATCM_END_EXCLUSIVE            (0x00020000u)
-#define SECURE_APP_LDR_DATA_START                (0x00108000u)
-#define SECURE_APP_LDR_DATA_END_EXCLUSIVE        (0x0010A000u)
-#define SECURE_APP_LDR_PRG_START                 (0x0010A000u)
-#define SECURE_APP_LDR_PRG_END_EXCLUSIVE         (0x00118000u)
+#define SECURE_APP_LDR_DATA_START                (0x00118000u)
+#define SECURE_APP_LDR_DATA_END_EXCLUSIVE        (0x0011A000u)
+#define SECURE_APP_LDR_PRG_START                 (0x0011A000u)
+#define SECURE_APP_LDR_PRG_END_EXCLUSIVE         (0x00120000u)
 #define SECURE_APP_USER_APP_START                (0x10000100u)
 #define SECURE_APP_USER_APP_END_EXCLUSIVE        (0x10130000u)
 #define SECURE_APP_NONCACHE_START                (0x30160000u)
@@ -529,5 +562,172 @@ secure_app_deploy_result_t secure_app_deploy_copy(const secure_app_manifest_t * 
                       manifest->header.entry_point,
                       manifest->header.package_size,
                       1u);
+    return SECURE_APP_DEPLOY_OK;
+}
+
+secure_app_deploy_result_t secure_app_deploy_copy_overall_app(const app_manifest_t * manifest,
+                                                              uint32_t image_link_base,
+                                                              uint32_t image_runtime_base,
+                                                              uint32_t image_runtime_size,
+                                                              void (*copy_func)(uintptr_t * src,
+                                                                                uintptr_t * dst,
+                                                                                uintptr_t bytesize),
+                                                              void (** p_entry)(void))
+{
+    uint32_t i;
+
+    if ((NULL == manifest) || (NULL == copy_func) || (NULL == p_entry))
+    {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_NULL,
+                          SECURE_APP_DEPLOY_STAGE_IDLE,
+                          0u,
+                          0u,
+                          0u,
+                          0u,
+                          3u);
+        return SECURE_APP_DEPLOY_ERR_NULL;
+    }
+
+    if (sizeof(app_manifest_t) > image_runtime_size)
+    {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_PACKAGE_RANGE,
+                          SECURE_APP_DEPLOY_STAGE_PACKAGE_RANGE,
+                          0u,
+                          0u,
+                          image_runtime_base,
+                          image_runtime_size,
+                          4u);
+        return SECURE_APP_DEPLOY_ERR_PACKAGE_RANGE;
+    }
+
+    deploy_status_set(SECURE_APP_DEPLOY_OK,
+                      SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                      0u,
+                      0u,
+                      (uint32_t)(uintptr_t) manifest,
+                      manifest->entry_count,
+                      0u);
+
+    if ((APP_MANIFEST_MAGIC != manifest->magic) ||
+        (0u == manifest->entry_count) ||
+        (manifest->entry_count > APP_MANIFEST_ENTRIES))
+    {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
+                          SECURE_APP_DEPLOY_STAGE_LEGACY_MANIFEST,
+                          0u,
+                          0u,
+                          (uint32_t)(uintptr_t) manifest,
+                          manifest->magic,
+                          7u);
+        return SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH;
+    }
+
+    if (!segment_destination_allowed(APP_MANIFEST_SEGMENT_ID_LDR_PRG, manifest->entry_point, 1u))
+    {
+        deploy_status_set(SECURE_APP_DEPLOY_ERR_ENTRY_POINT,
+                          SECURE_APP_DEPLOY_STAGE_ENTRY_POINT,
+                          0u,
+                          APP_MANIFEST_SEGMENT_ID_LDR_PRG,
+                          manifest->entry_point,
+                          1u,
+                          2u);
+        return SECURE_APP_DEPLOY_ERR_ENTRY_POINT;
+    }
+
+    for (i = 0u; i < manifest->entry_count; i++)
+    {
+        const app_manifest_entry_t * entry = &manifest->entries[i];
+        uint32_t image_offset;
+        uint32_t runtime_src;
+
+        if (0u == (entry->flags & APP_MANIFEST_ENTRY_FLAG_ENABLE))
+        {
+            continue;
+        }
+
+        if ((0u != (entry->flags & ~APP_MANIFEST_ENTRY_FLAG_ENABLE)) || (0u == entry->size))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_FLAGS,
+                              i,
+                              i,
+                              entry->dst,
+                              entry->size,
+                              entry->flags);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
+        }
+
+        if (entry->src < image_link_base)
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+                              i,
+                              i,
+                              entry->src,
+                              entry->size,
+                              image_link_base);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+        }
+
+        image_offset = entry->src - image_link_base;
+        if ((image_offset > image_runtime_size) || (entry->size > (image_runtime_size - image_offset)))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+                              i,
+                              i,
+                              entry->src,
+                              entry->size,
+                              image_runtime_size);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+        }
+
+        runtime_src = image_runtime_base + image_offset;
+        if ((runtime_src < image_runtime_base) ||
+            (!range_inside(runtime_src, entry->size, SECURE_APP_FLASH_BANK_START, SECURE_APP_FLASH_BANK_END_EXCLUSIVE)))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+                              i,
+                              i,
+                              runtime_src,
+                              entry->size,
+                              image_offset);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+        }
+
+        if (!segment_destination_allowed(i, entry->dst, entry->size))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_DESTINATION,
+                              i,
+                              i,
+                              entry->dst,
+                              entry->size,
+                              2u);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+        }
+
+        ssbl_deploy_print_segment(i, entry, runtime_src);
+        deploy_status_set(SECURE_APP_DEPLOY_OK,
+                          SECURE_APP_DEPLOY_STAGE_COPY,
+                          i,
+                          i,
+                          entry->dst,
+                          entry->size,
+                          runtime_src);
+        copy_func((uintptr_t *)(uintptr_t) runtime_src,
+                  (uintptr_t *)(uintptr_t) entry->dst,
+                  (uintptr_t) entry->size);
+    }
+
+    *p_entry = (void (*)(void))(uintptr_t) manifest->entry_point;
+    deploy_status_set(SECURE_APP_DEPLOY_OK,
+                      SECURE_APP_DEPLOY_STAGE_DONE,
+                      manifest->entry_count,
+                      0u,
+                      manifest->entry_point,
+                      image_runtime_base,
+                      image_runtime_size);
     return SECURE_APP_DEPLOY_OK;
 }

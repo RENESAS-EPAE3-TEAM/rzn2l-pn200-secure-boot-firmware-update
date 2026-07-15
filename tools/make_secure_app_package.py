@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Create a PN2.0 secure App manifest, package body, and signed package.
+"""Create a PN2.0 secure App body and signed package.
 
 The script consumes the existing PN2.0 App raw binary whose first bytes contain
-the legacy RZAP app_manifest_t. It converts that manifest into a secure manifest
-using package-relative source offsets and per-segment SHA-256 values.
+the legacy RZAP app_manifest_t.
 
 The package body is the contiguous image authenticated by the Renesas Code
-Certificate:
+Certificate. The default plan-B layout signs the whole App without encryption:
+
+    PN2.0 App raw binary
+
+The retained RZSM mode converts the legacy manifest into a secure manifest using
+package-relative source offsets and per-segment SHA-256 values:
 
     Secure Manifest + padding + PN2.0 App raw binary
 
@@ -406,6 +410,53 @@ def inspect_package_body(body: bytes, package_base: int, code_cert: bytes | None
         print(f"summary:          {summary_out}")
 
 
+def legacy_manifest_size(legacy_manifest: LegacyManifest) -> int:
+    return APP_MANIFEST_HEADER_SIZE + len(legacy_manifest.entries) * APP_MANIFEST_ENTRY_SIZE
+
+
+def inspect_overall_app_body(body: bytes, package_base: int, image_base: int, code_cert: bytes | None, summary_out: Path | None) -> None:
+    legacy_manifest = parse_legacy_manifest(body, 0)
+    body_addr = package_base + TOTAL_CERT_SIZE
+
+    if code_cert is not None:
+        validate_code_cert_layout(parse_code_cert_header(code_cert), body_addr, len(body))
+
+    summary = {
+        "scheme": "overall-app",
+        "manifest_magic": "RZAP",
+        "package_base": hex32(package_base),
+        "body_addr": hex32(body_addr),
+        "body_size": len(body),
+        "body_sha256": sha256_hex(body),
+        "image_base": hex32(image_base),
+        "entry_point": hex32(legacy_manifest.entry_point),
+        "segments": [
+            {
+                "segment_id": entry.segment_id,
+                "name": SEGMENT_NAMES[entry.segment_id] if entry.segment_id < len(SEGMENT_NAMES) else f"SEGMENT_{entry.segment_id}",
+                "src": hex32(entry.src),
+                "runtime_src": hex32(body_addr + (entry.src - image_base)) if entry.src >= image_base else None,
+                "dst": hex32(entry.dst),
+                "size": entry.size,
+                "flags": hex32(entry.flags),
+            }
+            for entry in legacy_manifest.entries
+            if (entry.flags & SEGMENT_FLAG_ENABLE) and entry.size
+        ],
+    }
+
+    if summary_out:
+        summary_out.parent.mkdir(parents=True, exist_ok=True)
+        summary_out.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+    print(f"inspect ok:       overall App body ({len(body)} bytes)")
+    print(f"body address:     {hex32(body_addr)}")
+    print(f"segments:         {len(summary['segments'])}")
+    print(f"entry point:      {hex32(legacy_manifest.entry_point)}")
+    if summary_out:
+        print(f"summary:          {summary_out}")
+
+
 def write_json_summary(
     output_path: Path,
     legacy_manifest: LegacyManifest,
@@ -499,6 +550,91 @@ def write_json_summary(
     output_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
 
+def write_overall_app_json_summary(
+    output_path: Path,
+    legacy_manifest: LegacyManifest,
+    image_base: int,
+    app_image: bytes,
+    package_base: int,
+    manifest_out: Path | None,
+    body_out: Path | None,
+    signed_package_out: Path | None,
+    key_cert: bytes | None,
+    code_cert: bytes | None,
+) -> None:
+    body_addr = package_base + TOTAL_CERT_SIZE
+    entries = []
+    for entry in legacy_manifest.entries:
+        if not ((entry.flags & SEGMENT_FLAG_ENABLE) and entry.size):
+            continue
+        image_offset = entry.src - image_base
+        entries.append(
+            {
+                "segment_id": entry.segment_id,
+                "name": SEGMENT_NAMES[entry.segment_id] if entry.segment_id < len(SEGMENT_NAMES) else f"SEGMENT_{entry.segment_id}",
+                "src": hex32(entry.src),
+                "runtime_src": hex32(body_addr + image_offset) if image_offset >= 0 else None,
+                "dst": hex32(entry.dst),
+                "size": entry.size,
+                "flags": hex32(entry.flags),
+            }
+        )
+
+    summary: dict[str, object] = {
+        "scheme": "overall-app",
+        "manifest_magic": "RZAP",
+        "manifest_out": str(manifest_out) if manifest_out else None,
+        "manifest_size": legacy_manifest_size(legacy_manifest),
+        "package_size": len(app_image),
+        "body_size": len(app_image),
+        "entry_point": hex32(legacy_manifest.entry_point),
+        "image_base": hex32(image_base),
+        "app_image_sha256": sha256_hex(app_image),
+        "body_sha256": sha256_hex(app_image),
+        "layout": {
+            "package_base": hex32(package_base),
+            "key_cert_addr": hex32(package_base),
+            "key_cert_size": KEY_CERT_SIZE,
+            "code_cert_addr": hex32(package_base + KEY_CERT_SIZE),
+            "code_cert_size": CODE_CERT_SIZE,
+            "body_addr": hex32(body_addr),
+            "body_size": len(app_image),
+            "legacy_manifest_addr": hex32(body_addr),
+        },
+        "outputs": {
+            "body_out": str(body_out) if body_out else None,
+            "signed_package_out": str(signed_package_out) if signed_package_out else None,
+        },
+        "segments": entries,
+    }
+
+    if key_cert is not None and code_cert is not None:
+        code_cert_header = parse_code_cert_header(code_cert)
+        signed_package_size = TOTAL_CERT_SIZE + len(app_image)
+        summary["certificates"] = {
+            "key_cert_size": len(key_cert),
+            "key_cert_sha256": sha256_hex(key_cert),
+            "code_cert_size": len(code_cert),
+            "code_cert_sha256": sha256_hex(code_cert),
+            "code_cert_header": {
+                "magic_num": hex32(code_cert_header.magic_num),
+                "manifest_ver": hex32(code_cert_header.manifest_ver),
+                "flags": hex32(code_cert_header.flags),
+                "write_addr": hex32(code_cert_header.write_addr),
+                "dest_addr": hex32(code_cert_header.dest_addr),
+                "img_size": code_cert_header.img_size,
+                "img_ver": hex32(code_cert_header.img_ver),
+                "opts_info": hex32(code_cert_header.opts_info),
+            },
+        }
+        summary["signed_package"] = {
+            "size": signed_package_size,
+            "sha256": sha256_hex(key_cert + code_cert + app_image),
+        }
+
+    output_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+
+
 def resolve_body_out(body_out: Path | None, package_out: Path | None) -> Path | None:
     if body_out and package_out and body_out != package_out:
         raise ValueError("--body-out and legacy --package-out were both provided with different paths")
@@ -507,9 +643,10 @@ def resolve_body_out(body_out: Path | None, package_out: Path | None) -> Path | 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create PN2.0 secure App manifest/body/signed package")
+    parser.add_argument("--scheme", choices=("rzsm", "overall-app"), default="rzsm", help="Packaging scheme: rzsm for plan A, overall-app for plan B")
     parser.add_argument("--app-bin", type=Path, help="Input PN2.0 App raw binary")
-    parser.add_argument("--manifest-out", type=Path, help="Output secure manifest binary")
-    parser.add_argument("--body-out", type=Path, help="Optional output package body: secure manifest + padding + App raw binary")
+    parser.add_argument("--manifest-out", type=Path, help="Output manifest binary: RZAP copy for overall-app, RZSM for rzsm")
+    parser.add_argument("--body-out", type=Path, help="Optional output package body for the selected scheme")
     parser.add_argument("--package-out", type=Path, help="Legacy alias for --body-out")
     parser.add_argument("--key-cert", type=Path, help="Input Key Certificate generated by the Renesas signing flow")
     parser.add_argument("--code-cert", type=Path, help="Input Code Certificate generated by the Renesas signing flow")
@@ -546,11 +683,16 @@ def main() -> int:
             code_cert = signed_package[KEY_CERT_SIZE:TOTAL_CERT_SIZE]
             body = signed_package[TOTAL_CERT_SIZE:]
 
-        inspect_package_body(body, args.package_base, code_cert, args.summary_out)
+        if "overall-app" == args.scheme:
+            inspect_overall_app_body(body, args.package_base, args.image_base, code_cert, args.summary_out)
+        else:
+            inspect_package_body(body, args.package_base, code_cert, args.summary_out)
         return 0
 
-    if args.app_bin is None or args.manifest_out is None:
-        raise ValueError("--app-bin and --manifest-out are required in generation mode")
+    if args.app_bin is None:
+        raise ValueError("--app-bin is required in generation mode")
+    if ("rzsm" == args.scheme) and (args.manifest_out is None):
+        raise ValueError("--manifest-out is required when --scheme rzsm")
 
     body_out = resolve_body_out(args.body_out, args.package_out)
     cert_inputs = [args.key_cert, args.code_cert, args.signed_package_out]
@@ -559,6 +701,56 @@ def main() -> int:
 
     app_image = args.app_bin.read_bytes()
     legacy_manifest = parse_legacy_manifest(app_image, args.app_manifest_offset)
+
+    if "overall-app" == args.scheme:
+        body = app_image
+        if args.manifest_out:
+            manifest_end = args.app_manifest_offset + legacy_manifest_size(legacy_manifest)
+            args.manifest_out.parent.mkdir(parents=True, exist_ok=True)
+            args.manifest_out.write_bytes(app_image[args.app_manifest_offset:manifest_end])
+
+        if body_out:
+            body_out.parent.mkdir(parents=True, exist_ok=True)
+            body_out.write_bytes(body)
+
+        key_cert = None
+        code_cert = None
+        if args.signed_package_out:
+            key_cert = read_fixed_size(args.key_cert, KEY_CERT_SIZE, "Key Certificate")
+            code_cert = read_fixed_size(args.code_cert, CODE_CERT_SIZE, "Code Certificate")
+            code_cert_header = parse_code_cert_header(code_cert)
+            if not args.no_cert_layout_check:
+                validate_code_cert_layout(code_cert_header, args.package_base + TOTAL_CERT_SIZE, len(body))
+            args.signed_package_out.parent.mkdir(parents=True, exist_ok=True)
+            args.signed_package_out.write_bytes(key_cert + code_cert + body)
+
+        if args.summary_out:
+            args.summary_out.parent.mkdir(parents=True, exist_ok=True)
+            write_overall_app_json_summary(
+                args.summary_out,
+                legacy_manifest,
+                args.image_base,
+                app_image,
+                args.package_base,
+                args.manifest_out,
+                body_out,
+                args.signed_package_out,
+                key_cert,
+                code_cert,
+            )
+
+        if args.manifest_out:
+            print(f"legacy manifest:  {args.manifest_out} ({legacy_manifest_size(legacy_manifest)} bytes)")
+        if body_out:
+            print(f"package body:     {body_out} ({len(body)} bytes)")
+        if args.signed_package_out:
+            print(f"signed package:   {args.signed_package_out} ({TOTAL_CERT_SIZE + len(body)} bytes)")
+            print(f"body address:     0x{args.package_base + TOTAL_CERT_SIZE:08X}")
+        print("scheme:           overall-app")
+        print(f"segments:         {sum(1 for entry in legacy_manifest.entries if (entry.flags & SEGMENT_FLAG_ENABLE) and entry.size)}")
+        print(f"entry point:      0x{legacy_manifest.entry_point:08X}")
+        return 0
+
     manifest, payload_offset = make_secure_manifest(
         app_image,
         legacy_manifest,

@@ -265,7 +265,7 @@ define symbol __region_ROM_end__                             = ROM_END_ADDRESS;
 define symbol __region_RAM_start__                           = RAM_ADDRESS;
 define symbol __region_RAM_end__                             = RAM_END_ADDRESS;
 
-define symbol APP_LDR_BTCM_OFFSET                            = 0x00008000;
+define symbol APP_LDR_BTCM_OFFSET                            = 0x00018000;
 define symbol __region_D_LOADER_STACK_start__                = LOADER_STACK_ADDRESS + APP_LDR_BTCM_OFFSET;
 define symbol __region_D_LOADER_STACK_end__                  = LOADER_STACK_END_ADDRESS;
 
@@ -298,7 +298,7 @@ else
 define symbol __region_D_LDR_DATA_start__        = 0x00100000 + APP_LDR_BTCM_OFFSET;
 define symbol __region_D_LDR_DATA_end__          = 0x00101FFF + APP_LDR_BTCM_OFFSET;
 define symbol __region_D_LDR_PRG_start__         = 0x00102000 + APP_LDR_BTCM_OFFSET;
-define symbol __region_D_LDR_PRG_end__           = 0x0010FFFF + APP_LDR_BTCM_OFFSET;
+define symbol __region_D_LDR_PRG_end__           = LOADER_STACK_END_ADDRESS;
 define symbol __region_USER_APP_start__          = 0x10000100;
 define symbol __region_USER_APP_end__            = 0x1012FFFF;
 define symbol __region_TASK_STACK_start__        = 0x10130000;

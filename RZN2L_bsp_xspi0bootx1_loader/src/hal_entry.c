@@ -42,7 +42,7 @@ static void ssbl_print_verify_status(const char * label)
 {
     const volatile secure_app_verify_status_t * status = secure_app_verify_last_status();
 
-    SSBL_TRACE("[SSBL][VERIFY][%s] result=%lu stage=%lu fsp=0x%08lx\n",
+    SSBL_TRACE("[SSBL][VERIFY][%s] result=%lu stage=%lu fsp error=0x%08lx\n",
                label,
                (unsigned long) status->result,
                (unsigned long) status->stage,
@@ -95,6 +95,32 @@ static void ssbl_print_manifest_summary(const secure_app_manifest_t * manifest)
     }
 }
 
+static void ssbl_print_legacy_manifest_summary(const app_manifest_t * manifest)
+{
+    SSBL_TRACE("[SSBL][RZAP] addr=0x%08lx magic=0x%08lx count=%lu entry=0x%08lx\n",
+               (unsigned long)(uintptr_t) manifest,
+               (unsigned long) manifest->magic,
+               (unsigned long) manifest->entry_count,
+               (unsigned long) manifest->entry_point);
+    SSBL_TRACE("[SSBL][RZAP] link_base=0x%08lx runtime_base=0x%08lx\n",
+               (unsigned long) APP_MANIFEST_ADDR,
+               (unsigned long) SECURE_APP_PACKAGE_BODY_ADDR);
+
+    if (manifest->entry_count <= APP_MANIFEST_ENTRIES)
+    {
+        for (uint32_t i = 0u; i < manifest->entry_count; i++)
+        {
+            const app_manifest_entry_t * entry = &manifest->entries[i];
+            SSBL_TRACE("[SSBL][RZAP][SEG%lu] flags=0x%08lx src=0x%08lx dst=0x%08lx size=0x%08lx\n",
+                       (unsigned long) i,
+                       (unsigned long) entry->flags,
+                       (unsigned long) entry->src,
+                       (unsigned long) entry->dst,
+                       (unsigned long) entry->size);
+        }
+    }
+}
+
 static void ssbl_print_deploy_status(const char * label)
 {
     const volatile secure_app_deploy_status_t * status = secure_app_deploy_last_status();
@@ -115,6 +141,7 @@ static void ssbl_print_deploy_status(const char * label)
 #define SSBL_TRACE(...) ((void) 0)
 #define ssbl_print_verify_status(label) ((void) 0)
 #define ssbl_print_manifest_summary(manifest) ((void) 0)
+#define ssbl_print_legacy_manifest_summary(manifest) ((void) 0)
 #define ssbl_print_deploy_status(label) ((void) 0)
 #endif
 
@@ -170,7 +197,11 @@ void hal_entry(void)
         }
     }
     ssbl_print_verify_status("OK");
+#if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
     ssbl_print_manifest_summary(secure_app_manifest_ptr());
+#elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+    ssbl_print_legacy_manifest_summary(secure_app_legacy_manifest_ptr());
+#endif
 
   #if !SSBL_CFG_SECURE_PACKAGE_DEPLOY_ENABLE
     SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
@@ -180,7 +211,16 @@ void hal_entry(void)
     }
 #else
     SSBL_TRACE("[SSBL] secure package deploy start\n");
+#if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
     if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
+#elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+    if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy_overall_app(secure_app_legacy_manifest_ptr(),
+                                                                   APP_MANIFEST_ADDR,
+                                                                   SECURE_APP_PACKAGE_BODY_ADDR,
+                                                                   secure_app_verified_body_size(),
+                                                                   bsp_copy_multibyte,
+                                                                   &app_prg))
+#endif
     {
         ssbl_print_deploy_status("FAIL");
         while (1)
@@ -230,30 +270,7 @@ void hal_entry(void)
     }
     else
     {
-#if SSBL_CFG_LEGACY_TABLE_FALLBACK_ENABLE
-        SSBL_TRACE("[SSBL][LEGACY] manifest missing, use loader_table fallback\n");
-        /* Fall back to the static loader_table (kept for backwards-compat /
-         * single-image debug builds). */
-        for (uint8_t table_num = 0; table_num < TABLE_ENTRY_NUM; table_num++)
-        {
-            if (table[table_num].enable_flag == TABLE_ENABLE)
-            {
-                SSBL_TRACE("[SSBL][TABLE] copy index=%u src=0x%08lx dst=0x%08lx size=0x%08lx\n",
-                           (unsigned int) table_num,
-                           (unsigned long)(uintptr_t) table[table_num].src,
-                           (unsigned long)(uintptr_t) table[table_num].dst,
-                           (unsigned long)(uintptr_t) table[table_num].size);
-                bsp_copy_multibyte(table[table_num].src, table[table_num].dst, table[table_num].size);
-            }
-        }
-        app_prg = (void(*)(void))table[0].dst;
-#else
-        SSBL_TRACE("[SSBL][LEGACY] manifest missing and fallback disabled\n");
-        while (1)
-        {
-            ;
-        }
-#endif
+        // do nothing
     }
 #endif
 
@@ -315,10 +332,10 @@ void R_BSP_WarmStart (bsp_warm_start_event_t event)
          * In the split design this Loader (SSBL) executes from SystemRAM and is
          * responsible for switching the external QSPI flash to 1S-4S-4S mode
          * BEFORE jumping to the Application (which runs XIP @ 0x60100000). */
-        //bsp_qspi_quad_enable();  //mask for the debug uart
+        bsp_qspi_quad_enable();  
 
         /* Initialize external SDRAM so the Application can use CS2/CS3 mirror. */
-        //bsp_sdram_init();
+        bsp_sdram_init();
     }
 }
 
