@@ -37,7 +37,7 @@ define symbol SYSTEM_RAM_ALIGN_LENGTH                   = SYSTEM_RAM_PRV_LENGTH 
 /* Specifies the region where the user program is placed. */
 if ((isdefinedsymbol(ATCM_CR52_0_START)) || (isdefinedsymbol(ATCM_CR52_1_START)))
 {
-    define symbol INTVEC_ADDRESS                        = ATCM_PRV_START;
+    define symbol INTVEC_ADDRESS                        = BTCM_PRV_START + 0x00004000;
     define symbol RAM_OFFSET                            = 0x100;
     define symbol RAM_ADDRESS                           = (ATCM_PRV_START + RAM_OFFSET);
     define symbol RAM_END_ADDRESS                       = (ATCM_PRV_START + ATCM_PRV_LENGTH - ATCM_END_ADDRESS_OFFSET);
@@ -63,7 +63,7 @@ if ((isdefinedsymbol(BTCM_CR52_0_START)) || (isdefinedsymbol(BTCM_CR52_1_START))
     define symbol PN20_SSBL_BTCM_SIZE                  = 0x00018000;
     define symbol SSBL_BTCM_START                      = BTCM_PRV_START;
     define symbol SSBL_BTCM_END                        = BTCM_PRV_START + PN20_SSBL_BTCM_SIZE - 1;
-    define symbol LOADER_STACK_OFFSET                   = 0x2000;
+    define symbol LOADER_STACK_OFFSET                   = 0x2800;
     define symbol LOADER_STACK_ADDRESS                  = (BTCM_PRV_START + LOADER_STACK_OFFSET);
     define symbol LOADER_STACK_END_ADDRESS              = SSBL_BTCM_END;
 }
@@ -558,19 +558,18 @@ place in PCIE1_region { };
 place at address mem: INTVEC_ADDRESS            { block VECTOR_RBLOCK };
 
 /* Keep the SSBL below the Secure App BTCM reservation at 0x00118000. */
-place at start of SSBL_BTCM_region               { block USER_PRG_RBLOCK };
-place in SSBL_BTCM_region                        { readonly,
-                                                  readwrite };
-place in SSBL_BTCM_region                        { block USER_DATA_WBLOCK };
+place at address mem: LOADER_STACK_ADDRESS       { block LDR_PRG_RBLOCK };
+place in SSBL_BTCM_region                        { block LDR_DATA_WBLOCK };
+place in SSBL_BTCM_region                        { block SOFTWARE_RESET_ZBLOCK,
+                                                  block USER_PRG_RBLOCK,
+                                                  block USER_DATA_WBLOCK,
+                                                  readonly };
 place in SSBL_BTCM_region                        { block USER_DATA_ZBLOCK,
                                                   block NOINIT_BLOCK,
                                                   block HEAP_BLOCK,
                                                   block AARCH64_STACK,
                                                   block THREAD_STACK };
-place in SSBL_BTCM_region                        { block LDR_PRG_RBLOCK };
-place in SSBL_BTCM_region                        { block LDR_DATA_WBLOCK };
 place in SSBL_BTCM_region                        { block LDR_DATA_ZBLOCK,
-                                                  block SOFTWARE_RESET_ZBLOCK,
                                                   block LOADER_STACK };
 place in SSBL_BTCM_region                        { last block BTCM_END_block };
 
