@@ -60,18 +60,25 @@ else
 /* Specifies the region where the loader program (SSBL) is placed. */
 if ((isdefinedsymbol(BTCM_CR52_0_START)) || (isdefinedsymbol(BTCM_CR52_1_START)))
 {
+    define symbol PN20_SSBL_BTCM_SIZE                  = 0x00018000;
+    define symbol SSBL_BTCM_START                      = BTCM_PRV_START;
+    define symbol SSBL_BTCM_END                        = BTCM_PRV_START + PN20_SSBL_BTCM_SIZE - 1;
     define symbol LOADER_STACK_OFFSET                   = 0x2000;
     define symbol LOADER_STACK_ADDRESS                  = (BTCM_PRV_START + LOADER_STACK_OFFSET);
-    define symbol LOADER_STACK_END_ADDRESS              = (BTCM_PRV_START + BTCM_PRV_LENGTH - BTCM_END_ADDRESS_OFFSET);
+    define symbol LOADER_STACK_END_ADDRESS              = SSBL_BTCM_END;
 }
 else if (isdefinedsymbol(SYSTEM_RAM_START))
 {
+    define symbol SSBL_BTCM_START                      = 0;
+    define symbol SSBL_BTCM_END                        = 0;
     define symbol LOADER_STACK_OFFSET                   = 0x1000;
     define symbol LOADER_STACK_ADDRESS                  = (SYSTEM_RAM_ALIGN_START + LOADER_STACK_OFFSET);
     define symbol LOADER_STACK_END_ADDRESS              = (SYSTEM_RAM_ALIGN_START + SYSTEM_RAM_ALIGN_LENGTH - SYSTEM_RAM_END_ADDRESS_OFFSET);
 }
 else
 {
+    define symbol SSBL_BTCM_START                      = 0;
+    define symbol SSBL_BTCM_END                        = 0;
     define symbol LOADER_STACK_OFFSET                   = 0;
     define symbol LOADER_STACK_ADDRESS                  = 0;
     define symbol LOADER_STACK_END_ADDRESS              = 0;
@@ -274,6 +281,7 @@ define region PCIE1_region                       = mem:[from __region_PCIE1_star
 
 define region RAM_region                         = mem:[from __region_RAM_start__   to __region_RAM_end__];
 define region D_LOADER_STACK_region              = mem:[from __region_D_LOADER_STACK_start__   to __region_D_LOADER_STACK_end__];
+define region SSBL_BTCM_region                   = mem:[from SSBL_BTCM_START to SSBL_BTCM_END];
 define region NONCACHE_INIT_region               = mem:[from __region_NONCACHE_INIT_start__   to __region_NONCACHE_INIT_end__];
 define region NONCACHE_region                    = mem:[from __region_NONCACHE_start__   to __region_NONCACHE_end__];
 define region SHARED_NONCACHE_BUFFER_INIT_region = mem:[from __region_SHARED_NONCACHE_BUFFER_INIT_start__   to __region_SHARED_NONCACHE_BUFFER_INIT_end__];
@@ -549,24 +557,25 @@ place in PCIE1_region { };
 
 place at address mem: INTVEC_ADDRESS            { block VECTOR_RBLOCK };
 
-place at start of D_LOADER_STACK_region         { block LDR_PRG_RBLOCK };
-place in D_LOADER_STACK_region                  { block LDR_DATA_WBLOCK };
-place in D_LOADER_STACK_region                  { block LDR_DATA_ZBLOCK,
-                                                  block SOFTWARE_RESET_ZBLOCK,
-                                                  block LOADER_STACK };
-place in D_LOADER_STACK_region                  { last block BTCM_END_block };
-
-place at start of RAM_region                    { block USER_PRG_RBLOCK };
-place in RAM_region                             { readonly,
+/* Keep the SSBL below the Secure App BTCM reservation at 0x00118000. */
+place at start of SSBL_BTCM_region               { block USER_PRG_RBLOCK };
+place in SSBL_BTCM_region                        { readonly,
                                                   readwrite };
-place in RAM_region                             { block USER_DATA_WBLOCK };
-place in RAM_region                             { block USER_DATA_ZBLOCK,
+place in SSBL_BTCM_region                        { block USER_DATA_WBLOCK };
+place in SSBL_BTCM_region                        { block USER_DATA_ZBLOCK,
                                                   block NOINIT_BLOCK,
                                                   block HEAP_BLOCK,
                                                   block AARCH64_STACK,
                                                   block THREAD_STACK };
-place in RAM_region                             { last block ATCM_END_block };
-place in RAM_region                             { last block SYSTEM_RAM_END_block };
+place in SSBL_BTCM_region                        { block LDR_PRG_RBLOCK };
+place in SSBL_BTCM_region                        { block LDR_DATA_WBLOCK };
+place in SSBL_BTCM_region                        { block LDR_DATA_ZBLOCK,
+                                                  block SOFTWARE_RESET_ZBLOCK,
+                                                  block LOADER_STACK };
+place in SSBL_BTCM_region                        { last block BTCM_END_block };
+
+place in ATCM_region                             { last block ATCM_END_block };
+place in SYSTEM_RAM_region                       { last block SYSTEM_RAM_END_block };
 
 if (0 == SYSTEM_RAM_MIRROR_OFFSET)
 {
