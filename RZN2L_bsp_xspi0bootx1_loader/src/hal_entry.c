@@ -27,6 +27,8 @@ uint32_t g_out_of_band_index = 0;
 extern void bsp_copy_multibyte(uintptr_t * src, uintptr_t * dst, uintptr_t bytesize);
 extern const loader_table table[TABLE_ENTRY_NUM];
 extern void R_BSP_CacheCleanInvalidateAll(void);
+extern void R_BSP_CacheDisableData(void);
+extern void R_BSP_CacheDisableInst(void);
 
 /* Ported from rzn2l_xspi_boot: SDRAM (W9825G6KH-6) controller initialization.
  * Runs in the Loader (SSBL) so that the Application, once copied to SystemRAM
@@ -152,15 +154,16 @@ static void ssbl_print_deploy_status(const char * label)
 void hal_entry(void)
 {
   
-      /* Enable interrupt. */
-    __asm volatile ("cpsie i");
-    
     void (*app_prg)(void);
 
+#if SSBL_CFG_DEBUG_UART_ENABLE    
+    
+    /* Enable interrupt. */
+    __asm volatile ("cpsie i");
     /*UART open*/
     fsp_err_t err = R_SCI_UART_Open(&g_uart0_ctrl, &g_uart0_cfg);
     handle_error(err);
-    
+#endif    
     
     SSBL_TRACE("*** PN2.0.0 for rzn2l SSBL starting!!! ***\n");
     
@@ -214,6 +217,11 @@ void hal_entry(void)
 #if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
     if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
 #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+    
+    /* Disable IRQ interrupt */ // here need to disable the interrupt, cause the segment 2 would cover the atcm vector_table
+                                // which is conflicted with the vector_table of pn2.0 ssbl ram debug mode and lead to error
+    __asm volatile ("cpsid i");
+
     if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy_overall_app(secure_app_legacy_manifest_ptr(),
                                                                    APP_MANIFEST_ADDR,
                                                                    SECURE_APP_PACKAGE_BODY_ADDR,
@@ -221,6 +229,7 @@ void hal_entry(void)
                                                                    bsp_copy_multibyte,
                                                                    &app_prg))
 #endif
+
     {
         ssbl_print_deploy_status("FAIL");
         while (1)
@@ -228,7 +237,7 @@ void hal_entry(void)
             ;
         }
     }
-    ssbl_print_deploy_status("OK");
+//    ssbl_print_deploy_status("OK");
   #endif
 #else
 
@@ -288,11 +297,13 @@ void hal_entry(void)
     R_BSP_SoftwareDelay(1000, BSP_DELAY_UNITS_MILLISECONDS);
 
     R_BSP_CacheCleanInvalidateAll();
+    // R_BSP_CacheDisableData();        //added by deane for debugging app bsp_memory_protect_setting() is malfunctioning: 2026-0716
+    // R_BSP_CacheDisableInst();        //added by deane for debugging app bsp_memory_protect_setting() is malfunctioning: 2026-0716
     __asm volatile("dsb");
     __asm volatile("isb");
 
     /* Jump to the application project */
-    SSBL_TRACE("[SSBL] jump app=0x%08lx\n", (unsigned long)(uintptr_t) app_prg);
+    // SSBL_TRACE("[SSBL] jump app=0x%08lx\n", (unsigned long)(uintptr_t) app_prg);
     app_prg();
 }
 

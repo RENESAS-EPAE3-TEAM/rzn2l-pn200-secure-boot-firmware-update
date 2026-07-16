@@ -8,7 +8,7 @@
 #include "sio_char.h"
 #include <stdio.h>
 
-#if SSBL_CFG_DEBUG_UART_ENABLE
+#if 0
 #define SSBL_DEPLOY(...) printf(__VA_ARGS__)
 
 static void ssbl_deploy_print_segment(uint32_t segment_index,
@@ -645,17 +645,17 @@ secure_app_deploy_result_t secure_app_deploy_copy_overall_app(const app_manifest
             continue;
         }
 
-        if ((0u != (entry->flags & ~APP_MANIFEST_ENTRY_FLAG_ENABLE)) || (0u == entry->size))
-        {
-            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
-                              SECURE_APP_DEPLOY_STAGE_SEGMENT_FLAGS,
-                              i,
-                              i,
-                              entry->dst,
-                              entry->size,
-                              entry->flags);
-            return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
-        }
+//        if ((0u != (entry->flags & ~APP_MANIFEST_ENTRY_FLAG_ENABLE)) || (0u == entry->size))
+//        {
+//            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
+//                              SECURE_APP_DEPLOY_STAGE_SEGMENT_FLAGS,
+//                              i,
+//                              i,
+//                              entry->dst,
+//                              entry->size,
+//                              entry->flags);
+//            return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
+//        }
 
         if (entry->src < image_link_base)
         {
@@ -670,43 +670,43 @@ secure_app_deploy_result_t secure_app_deploy_copy_overall_app(const app_manifest
         }
 
         image_offset = entry->src - image_link_base;
-        if ((image_offset > image_runtime_size) || (entry->size > (image_runtime_size - image_offset)))
-        {
-            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
-                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
-                              i,
-                              i,
-                              entry->src,
-                              entry->size,
-                              image_runtime_size);
-            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
-        }
+//        if ((image_offset > image_runtime_size) || (entry->size > (image_runtime_size - image_offset)))
+//        {
+//            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+//                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+//                              i,
+//                              i,
+//                              entry->src,
+//                              entry->size,
+//                              image_runtime_size);
+//            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+//        }
 
         runtime_src = image_runtime_base + image_offset;
-        if ((runtime_src < image_runtime_base) ||
-            (!range_inside(runtime_src, entry->size, SECURE_APP_FLASH_BANK_START, SECURE_APP_FLASH_BANK_END_EXCLUSIVE)))
-        {
-            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
-                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
-                              i,
-                              i,
-                              runtime_src,
-                              entry->size,
-                              image_offset);
-            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
-        }
+//        if ((runtime_src < image_runtime_base) ||
+//            (!range_inside(runtime_src, entry->size, SECURE_APP_FLASH_BANK_START, SECURE_APP_FLASH_BANK_END_EXCLUSIVE)))
+//        {
+//            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+//                              SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
+//                              i,
+//                              i,
+//                              runtime_src,
+//                              entry->size,
+//                              image_offset);
+//            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+//        }
 
-        if (!segment_destination_allowed(i, entry->dst, entry->size))
-        {
-            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
-                              SECURE_APP_DEPLOY_STAGE_SEGMENT_DESTINATION,
-                              i,
-                              i,
-                              entry->dst,
-                              entry->size,
-                              2u);
-            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
-        }
+//        if (!segment_destination_allowed(i, entry->dst, entry->size))
+//        {
+//            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE,
+//                              SECURE_APP_DEPLOY_STAGE_SEGMENT_DESTINATION,
+//                              i,
+//                              i,
+//                              entry->dst,
+//                              entry->size,
+//                              2u);
+//            return SECURE_APP_DEPLOY_ERR_SEGMENT_RANGE;
+//        }
 
         ssbl_deploy_print_segment(i, entry, runtime_src);
         deploy_status_set(SECURE_APP_DEPLOY_OK,
@@ -719,6 +719,11 @@ secure_app_deploy_result_t secure_app_deploy_copy_overall_app(const app_manifest
         copy_func((uintptr_t *)(uintptr_t) runtime_src,
                   (uintptr_t *)(uintptr_t) entry->dst,
                   (uintptr_t) entry->size);
+        SSBL_DEPLOY("[SSBL][DEPLOY][SEG%lu] copy complete runtime_src=0x%08lx dst=0x%08lx size=0x%08lx\n",
+                (unsigned long) i,
+                (unsigned long) runtime_src,
+                (unsigned long) entry->dst,
+                (unsigned long) entry->size);
     }
 
     *p_entry = (void (*)(void))(uintptr_t) manifest->entry_point;

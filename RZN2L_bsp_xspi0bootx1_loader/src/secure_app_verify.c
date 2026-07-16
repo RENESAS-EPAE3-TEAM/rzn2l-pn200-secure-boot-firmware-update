@@ -19,7 +19,7 @@
 #if SSBL_CFG_DEBUG_UART_ENABLE
 #define SSBL_VERIFY(...) printf(__VA_ARGS__)
 #else
-#define SSBL_TRACE(...) ((void) 0)
+#define SSBL_VERIFY(...) ((void) 0)
 #endif
 
 typedef struct st_secure_app_code_cert_header
