@@ -283,8 +283,11 @@ void hal_entry(void)
     R_BSP_SoftwareDelay(1000, BSP_DELAY_UNITS_MILLISECONDS);
 
     R_BSP_CacheCleanInvalidateAll();
-    // R_BSP_CacheDisableData();        //added by deane for debugging app bsp_memory_protect_setting() is malfunctioning: 2026-0716
-    // R_BSP_CacheDisableInst();        //added by deane for debugging app bsp_memory_protect_setting() is malfunctioning: 2026-0716
+
+    R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
+    R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
+    R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
+    
     __asm volatile("dsb");
     __asm volatile("isb");
 

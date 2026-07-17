@@ -109,7 +109,7 @@ void SystemInit (void)
 #if BSP_CFG_C_RUNTIME_INIT
 
     /* Copy the primary core loader data from external Flash to internal RAM. */
-    bsp_loader_data_init();
+    bsp_loader_data_init();   
 
     /* Clear loader bss section in internal RAM. */
     bsp_loader_bss_init();
