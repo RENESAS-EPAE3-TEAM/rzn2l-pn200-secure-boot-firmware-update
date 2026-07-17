@@ -8,7 +8,7 @@
 #include "sio_char.h"
 #include <stdio.h>
 
-#if 0
+#if SSBL_CFG_DEBUG_UART_ENABLE
 #define SSBL_DEPLOY(...) printf(__VA_ARGS__)
 
 static void ssbl_deploy_print_segment(uint32_t segment_index,

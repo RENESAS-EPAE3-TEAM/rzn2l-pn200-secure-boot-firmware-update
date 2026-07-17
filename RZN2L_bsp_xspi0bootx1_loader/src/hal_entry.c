@@ -153,31 +153,20 @@ static void ssbl_print_deploy_status(const char * label)
  **********************************************************************************************************************/
 void hal_entry(void)
 {
-  
+
     void (*app_prg)(void);
 
-#if SSBL_CFG_DEBUG_UART_ENABLE    
-    
+#if SSBL_CFG_DEBUG_UART_ENABLE
+
     /* Enable interrupt. */
     __asm volatile ("cpsie i");
     /*UART open*/
     fsp_err_t err = R_SCI_UART_Open(&g_uart0_ctrl, &g_uart0_cfg);
     handle_error(err);
-#endif    
-    
-    SSBL_TRACE("*** PN2.0.0 for rzn2l SSBL starting!!! ***\n");
-    
-    /* LED type structure */
-//    bsp_leds_t leds = g_bsp_leds;
+#endif
 
-    /* If this board has no LEDs then trap here */
-//    if (0 == leds.led_count)
-//    {
-//        while (1)
-//        {
-//            ;                          // There are no LEDs on this board
-//        }
-//    }
+    SSBL_TRACE("*** PN2.0.0 for rzn2l SSBL starting!!! ***\n");
+
 
     /* Holds level to set for pins */
     bsp_io_level_t pin_level = BSP_IO_LEVEL_HIGH;
@@ -217,10 +206,7 @@ void hal_entry(void)
 #if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
     if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
 #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
-    
-    /* Disable IRQ interrupt */ // here need to disable the interrupt, cause the segment 2 would cover the atcm vector_table
-                                // which is conflicted with the vector_table of pn2.0 ssbl ram debug mode and lead to error
-    __asm volatile ("cpsid i");
+
 
     if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy_overall_app(secure_app_legacy_manifest_ptr(),
                                                                    APP_MANIFEST_ADDR,
@@ -237,7 +223,7 @@ void hal_entry(void)
             ;
         }
     }
-//    ssbl_print_deploy_status("OK");
+    ssbl_print_deploy_status("OK");
   #endif
 #else
 
@@ -303,7 +289,14 @@ void hal_entry(void)
     __asm volatile("isb");
 
     /* Jump to the application project */
-    // SSBL_TRACE("[SSBL] jump app=0x%08lx\n", (unsigned long)(uintptr_t) app_prg);
+    SSBL_TRACE("[SSBL] jump app=0x%08lx\n", (unsigned long)(uintptr_t) app_prg);
+
+    __asm volatile ("cpsid i"); // disable the interrupt
+
+    R_SCI_UART_Close(&g_uart0_ctrl);
+
+    R_RSIP_Close(&g_rsip_ctrl);
+
     app_prg();
 }
 
