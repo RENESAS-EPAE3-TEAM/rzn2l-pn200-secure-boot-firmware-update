@@ -38,6 +38,7 @@ static uint32_t g_secure_app_verify_last_fsp_error;
 static uint32_t g_secure_app_verified_body_size;
 volatile secure_app_verify_status_t g_secure_app_verify_last_status;
 
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
 static const char * manifest_verify_error_string(fsp_err_t fsp_err)
 {
     switch (fsp_err)
@@ -120,6 +121,8 @@ static const char * manifest_verify_error_string(fsp_err_t fsp_err)
         }
     }
 }
+#endif 
+
 
 static void verify_status_set(secure_app_verify_result_t result,
                               secure_app_verify_stage_t stage,

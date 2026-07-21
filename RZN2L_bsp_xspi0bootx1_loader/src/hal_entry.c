@@ -284,9 +284,9 @@ void hal_entry(void)
 
     R_BSP_CacheCleanInvalidateAll();
 
-    R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
-    R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
-    R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
+    //R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
+    //R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
+    //R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
     
     __asm volatile("dsb");
     __asm volatile("isb");
@@ -297,9 +297,9 @@ void hal_entry(void)
     __asm volatile ("cpsid i"); // disable the interrupt
 
     R_SCI_UART_Close(&g_uart0_ctrl);
-
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
     R_RSIP_Close(&g_rsip_ctrl);
-
+#endif
     app_prg();
 }
 

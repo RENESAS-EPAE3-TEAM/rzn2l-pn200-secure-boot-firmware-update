@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define APP_MANIFEST_ADDR        (0x60100050u)
+#define APP_MANIFEST_ADDR        (0x60100250u)
 #define APP_MANIFEST_MAGIC       (0x50415A52u) /* 'RZAP' little-endian */
 #define APP_MANIFEST_VERSION     (0x00000001u)
 #define APP_MANIFEST_ENTRIES     (9u)

@@ -654,7 +654,7 @@ def main() -> int:
     parser.add_argument("--inspect-body", type=Path, help="Inspect and validate an existing package body")
     parser.add_argument("--inspect-signed-package", type=Path, help="Inspect and validate an existing signed package")
     parser.add_argument("--summary-out", type=Path, help="Optional JSON summary output")
-    parser.add_argument("--image-base", type=parse_int, default=0x60100050, help="Link-time xSPI base address of the App image")
+    parser.add_argument("--image-base", type=parse_int, default=0x60100250, help="Link-time xSPI base address of the App image")
     parser.add_argument("--package-base", type=parse_int, default=0x60100050, help="xSPI base address of the complete signed package")
     parser.add_argument("--app-manifest-offset", type=parse_int, default=0, help="Offset of the legacy RZAP app_manifest_t in the App image")
     parser.add_argument("--package-version", type=parse_int, default=1, help="Monotonic package version for future anti-rollback")

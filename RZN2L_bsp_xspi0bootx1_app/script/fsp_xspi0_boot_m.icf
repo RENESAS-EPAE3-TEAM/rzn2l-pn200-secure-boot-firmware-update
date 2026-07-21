@@ -252,8 +252,9 @@ define symbol __region_PCIE1_end__                           = PCIE1_PRV_START +
 define symbol __region_LDR_PARAM_start__                     = LOADER_PARAM_ADDRESS;
 define symbol __region_LDR_PARAM_end__                       = LOADER_PARAM_END_ADDRESS;
 
+define symbol APP_SECURE_KEY_CODE_CERTIFICATE_OFFSET         = 0x00000200;
 define symbol APP_MANIFEST_SIZE                              = 0x00000100;
-define symbol APP_MANIFEST_ADDRESS                           = ROM_ADDRESS + LOADER_PARAM_OFFSET;
+define symbol APP_MANIFEST_ADDRESS                           = ROM_ADDRESS + LOADER_PARAM_OFFSET + APP_SECURE_KEY_CODE_CERTIFICATE_OFFSET;
 define symbol APP_MANIFEST_END_ADDRESS                       = APP_MANIFEST_ADDRESS + APP_MANIFEST_SIZE - 1;
 
 define symbol __region_APP_MANIFEST_start__                  = APP_MANIFEST_ADDRESS;
