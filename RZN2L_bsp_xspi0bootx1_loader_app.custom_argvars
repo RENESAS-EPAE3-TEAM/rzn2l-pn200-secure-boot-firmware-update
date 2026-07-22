@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iarUserArgVars>
+    <group name="RA Smart Configurator" active="true">
+        <variable>
+            <name>RASC_EXE_PATH</name>
+            <value>C:\Renesas\rzn\sc_v2025-04.1_fsp_v3.0.0\eclipse\rasc.exe</value>
+        </variable>
+        <variable>
+            <name>RASC_DEVICE_FAMILY</name>
+            <value>rzn</value>
+        </variable>
+    </group>
+</iarUserArgVars>

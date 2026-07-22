@@ -12,6 +12,11 @@
 !/.gitattributes
 !/RZN2L_bsp_xspi0bootx1_loader/
 !/RZN2L_bsp_xspi0bootx1_app/
+!/RZN2L_bsp_xspi0bootx1_loader_app.custom_argvars
+!/RZN2L_bsp_xspi0bootx1_loader_app.eww
+!/settings/
+!/settings/RZN2L_bsp_xspi0bootx1_loader_app.wsdt
+!/settings/RZN2L_bsp_xspi0bootx1_loader_app_EditorBookmarks.xml
 
 # ----------------------------------------------------------------------------
 # IAR EWARM build outputs (regenerated every build)
@@ -31,10 +36,7 @@
 *.pbd
 *.pbw
 *.browse
-*.wsdt
 *.wspos
-*.dbgdt
-*.dnx
 *.ewt.cspy.*
 
 # IAR backup files created by the IDE / RASC

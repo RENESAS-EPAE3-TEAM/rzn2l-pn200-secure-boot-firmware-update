@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\RZN2L_bsp_xspi0bootx1_app\RZN2L_bsp_xspi0bootx1_app.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\RZN2L_bsp_xspi0bootx1_loader\RZN2L_bsp_xspi0bootx1_loader.ewp</path>
+    </project>
+    <batchBuild />
+</workspace>
