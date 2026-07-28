@@ -78,7 +78,7 @@ const ioport_instance_t g_ioport =
         {
             .p_api = &g_ioport_on_ioport,
             .p_ctrl = &g_ioport_ctrl,
-            .p_cfg = &g_bsp_pin_cfg_QSPI0,
+            .p_cfg = &g_bsp_pin_cfg,
 
         };
 void g_common_init(void) {

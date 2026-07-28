@@ -102,5 +102,4 @@
 #define ETH2_RXCLK (BSP_IO_PORT_24_PIN_1)
 #define ETH2_RXD2 (BSP_IO_PORT_24_PIN_2)
 extern const ioport_cfg_t g_bsp_pin_cfg; /* RSK+RZN2L */
-extern const ioport_cfg_t g_bsp_pin_cfg_QSPI0; /* RSK+RZN2L_QSPI0 */
 #endif /* BSP_PIN_CFG_H_ */

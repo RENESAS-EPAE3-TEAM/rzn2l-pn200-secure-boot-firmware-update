@@ -189,42 +189,77 @@ void hal_entry(void)
         }
     }
     ssbl_print_verify_status("OK");
-#if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
-    ssbl_print_manifest_summary(secure_app_manifest_ptr());
-#elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
-    ssbl_print_legacy_manifest_summary(secure_app_legacy_manifest_ptr());
-#endif
+    
+  #if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
+      ssbl_print_manifest_summary(secure_app_manifest_ptr());
+  #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+      ssbl_print_legacy_manifest_summary(secure_app_legacy_manifest_ptr());
+      
+      //@@@@@@@@@@@@@@@@@@@@@@@@@@@ add for debug @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    const app_manifest_t * manifest = (const app_manifest_t *) APP_MANIFEST_ADDR;
+
+    if (APP_MANIFEST_MAGIC == manifest->magic)
+    {
+        uint32_t count = manifest->entry_count;
+        SSBL_TRACE("[SSBL][LEGACY] manifest=0x%08lx count=%lu entry=0x%08lx\n",
+                   (unsigned long)(uintptr_t) manifest,
+                   (unsigned long) manifest->entry_count,
+                   (unsigned long) manifest->entry_point);
+        if (count > APP_MANIFEST_ENTRIES)
+        {
+            count = APP_MANIFEST_ENTRIES;
+        }
+
+        for (uint32_t i = 0; i < count; i++)
+        {
+            const app_manifest_entry_t * e = &manifest->entries[i];
+            if ((e->flags & APP_MANIFEST_ENTRY_FLAG_ENABLE) && (e->size != 0u))
+            {
+                SSBL_TRACE("[SSBL][LEGACY] copy index=%lu src=0x%08lx dst=0x%08lx size=0x%08lx\n",
+                           (unsigned long) i,
+                           (unsigned long) e->src,
+                           (unsigned long) e->dst,
+                           (unsigned long) e->size);
+                bsp_copy_multibyte((uintptr_t *)(uintptr_t)e->src,
+                                   (uintptr_t *)(uintptr_t)e->dst,
+                                   (uintptr_t) e->size);
+            }
+        }
+
+        app_prg = (void(*)(void))(uintptr_t)manifest->entry_point;
+    }
+  #endif
 
   #if !SSBL_CFG_SECURE_PACKAGE_DEPLOY_ENABLE
-    SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
-    while (1)
-    {
-        ;
-    }
-#else
-    SSBL_TRACE("[SSBL] secure package deploy start\n");
-#if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
-    if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
-#elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+//      SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
+//      while (1)
+//      {
+//          ;
+//      }
+  #else
+      SSBL_TRACE("[SSBL] secure package deploy start\n");
+      #if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
+          if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy(secure_app_manifest_ptr(), bsp_copy_multibyte, &app_prg))
+      #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
 
 
-    if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy_overall_app(secure_app_legacy_manifest_ptr(),
-                                                                   APP_MANIFEST_ADDR,
-                                                                   SECURE_APP_PACKAGE_BODY_ADDR,
-                                                                   secure_app_verified_body_size(),
-                                                                   bsp_copy_multibyte,
-                                                                   &app_prg))
-#endif
-
-    {
-        ssbl_print_deploy_status("FAIL");
-        while (1)
-        {
-            ;
-        }
-    }
-    ssbl_print_deploy_status("OK");
+          if (SECURE_APP_DEPLOY_OK != secure_app_deploy_copy_overall_app(secure_app_legacy_manifest_ptr(),
+                                                                         APP_MANIFEST_ADDR,
+                                                                         SECURE_APP_PACKAGE_BODY_ADDR,
+                                                                         secure_app_verified_body_size(),
+                                                                         bsp_copy_multibyte,
+                                                                         &app_prg))
+      #endif
+          {
+              ssbl_print_deploy_status("FAIL");
+              while (1)
+              {
+                  ;
+              }
+          }
+          ssbl_print_deploy_status("OK");
   #endif
+    
 #else
 
     /* Read the App's manifest from the well-known flash address. The App's
@@ -284,9 +319,9 @@ void hal_entry(void)
 
     R_BSP_CacheCleanInvalidateAll();
 
-    //R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
-    //R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
-    //R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
+//    R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
+//    R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
+//    R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
     
     __asm volatile("dsb");
     __asm volatile("isb");
