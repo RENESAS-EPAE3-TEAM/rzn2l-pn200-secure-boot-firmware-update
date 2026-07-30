@@ -1,0 +1,592 @@
+include "memory_regions.icf";
+
+include "redefinition_memory_regions_iar.h";
+
+/*============================================================================*/
+/* M E M O R Y   S Y M B O L                                                  */
+/*============================================================================*/
+
+/* Determine the total memory size */
+if (isdefinedsymbol(CR52_0) || isdefinedsymbol(CR52_1))
+{
+    define memory mem with size = 4G;
+}
+else
+{
+    define memory mem with size = 32G;
+}
+
+/*============================================================================*/
+/* A D D R E S S   S Y M B O L                                                */
+/*============================================================================*/
+
+/* Determine whether it is a primary project or not. */
+if (0 == SECONDARY_PRV)
+{
+    define symbol _RZN_ORDINAL = 1;
+}
+else
+{
+    define symbol _RZN_ORDINAL = 2;
+}
+
+/* The start address of the SYSTEM_RAM in the secondary project is located 0x20000 from the end address of the primary project. */
+define symbol SYSTEM_RAM_ALIGN_START                    = alignup(SYSTEM_RAM_PRV_START, 0x20000);
+define symbol SYSTEM_RAM_ALIGN_LENGTH                   = SYSTEM_RAM_PRV_LENGTH - (SYSTEM_RAM_PRV_LENGTH % 0x20000);
+
+/* Specifies the region where the user program is placed. */
+if ((isdefinedsymbol(ATCM_CR52_0_START)) || (isdefinedsymbol(ATCM_CR52_1_START)))
+{
+    define symbol INTVEC_ADDRESS                        = ATCM_PRV_START;
+    define symbol RAM_OFFSET                            = 0x100;
+    define symbol RAM_ADDRESS                           = (ATCM_PRV_START + RAM_OFFSET);
+    define symbol RAM_END_ADDRESS                       = (ATCM_PRV_START + ATCM_PRV_LENGTH - ATCM_END_ADDRESS_OFFSET);
+}
+else if (isdefinedsymbol(SYSTEM_RAM_START))
+{
+    define symbol INTVEC_ADDRESS                        = SYSTEM_RAM_ALIGN_START;
+    define symbol RAM_OFFSET                            = 0x10000;
+    define symbol RAM_ADDRESS                           = (SYSTEM_RAM_ALIGN_START + RAM_OFFSET);
+    define symbol RAM_END_ADDRESS                       = (SYSTEM_RAM_ALIGN_START + SYSTEM_RAM_ALIGN_LENGTH - SYSTEM_RAM_END_ADDRESS_OFFSET);
+}
+else
+{
+    define symbol INTVEC_ADDRESS                        = 0;
+    define symbol RAM_OFFSET                            = 0;
+    define symbol RAM_ADDRESS                           = 0;
+    define symbol RAM_END_ADDRESS                       = 0;
+}
+
+/* Specifies the region where the loader program (SSBL) is placed. */
+if ((isdefinedsymbol(BTCM_CR52_0_START)) || (isdefinedsymbol(BTCM_CR52_1_START)))
+{
+    define symbol LOADER_STACK_OFFSET                   = 0x2000;
+    define symbol LOADER_STACK_ADDRESS                  = (BTCM_PRV_START + LOADER_STACK_OFFSET);
+    define symbol LOADER_STACK_END_ADDRESS              = (BTCM_PRV_START + BTCM_PRV_LENGTH - BTCM_END_ADDRESS_OFFSET);
+}
+else if (isdefinedsymbol(SYSTEM_RAM_START))
+{
+    define symbol LOADER_STACK_OFFSET                   = 0x1000;
+    define symbol LOADER_STACK_ADDRESS                  = (SYSTEM_RAM_ALIGN_START + LOADER_STACK_OFFSET);
+    define symbol LOADER_STACK_END_ADDRESS              = (SYSTEM_RAM_ALIGN_START + SYSTEM_RAM_ALIGN_LENGTH - SYSTEM_RAM_END_ADDRESS_OFFSET);
+}
+else
+{
+    define symbol LOADER_STACK_OFFSET                   = 0;
+    define symbol LOADER_STACK_ADDRESS                  = 0;
+    define symbol LOADER_STACK_END_ADDRESS              = 0;
+}
+
+/* Specifies the offset address of the mirror region of SYSTEM_RAM. */
+if (isdefinedsymbol(SYSTEM_RAM_START))
+{
+    if (isdefinedsymbol(SYSTEM_RAM_MIRROR_START))
+    {
+        define symbol SYSTEM_RAM_MIRROR_OFFSET          = 0x20000000;
+    }
+    else
+    {
+        if (isdefinedsymbol(CR52_0) || isdefinedsymbol(CR52_1))
+        {
+            define symbol SYSTEM_RAM_MIRROR_OFFSET      = 0x00000000;
+        }
+        else
+        {
+            define symbol SYSTEM_RAM_MIRROR_OFFSET      = 0x00200000;
+        }
+    }
+}
+else
+{
+    define symbol SYSTEM_RAM_MIRROR_OFFSET              = 0;
+}
+
+/* Specifies the offset address of the noncache region. */
+if (isdefinedsymbol(NONCACHE_START))
+{
+    define symbol NONCACHE_OFFSET                       = 0x00080000;
+    define symbol NONCACHE_END_OFFSET                   = 0x00020000;
+    define symbol SHARED_NONCACHE_BUFFER_OFFSET         = 0x00020000;
+    define symbol SHARED_NONCACHE_BUFFER_END_OFFSET     = 0x00000000;
+}
+else
+{
+    define symbol NONCACHE_OFFSET                       = 0;
+    define symbol NONCACHE_END_OFFSET                   = 0;
+    define symbol SHARED_NONCACHE_BUFFER_OFFSET         = 0;
+    define symbol SHARED_NONCACHE_BUFFER_END_OFFSET     = 0;
+}
+
+/* Calculate the usage of the noncache region. For multi-core projects, the calculation also takes into account the usage on the primary core. */
+if ((isdefinedsymbol(NONCACHE_START)) && (NONCACHE_OFFSET >= NONCACHE_PRV_LENGTH))
+{
+    define symbol tmp_noncache_usage                    = NONCACHE_OFFSET - NONCACHE_PRV_LENGTH;
+
+    if ((0 != tmp_noncache_usage % 0x20) || (NONCACHE_OFFSET == tmp_noncache_usage))
+    {
+        define symbol NONCACHE_USAGE                    = alignup(tmp_noncache_usage, 0x20);
+        define symbol NONCACHE_USAGE_ADJUSTMENT         = 0;
+    }
+    else
+    {
+        define symbol NONCACHE_USAGE                    = tmp_noncache_usage;
+        define symbol NONCACHE_USAGE_ADJUSTMENT         = 0x20;
+    }
+}
+else
+{
+    define symbol NONCACHE_USAGE                        = 0;
+    define symbol NONCACHE_USAGE_ADJUSTMENT             = 0;
+}
+
+/* Specifies the offset address of the noncache region used by the LCDC. */
+if ((0 != DDR_MIRROR0_PRV_START) || (0 != DDR_MIRROR1_PRV_START))
+{
+    define symbol LCDC_FRAME_BUFFER_OFFSET              = 0x04000000;
+}
+else
+{
+    define symbol LCDC_FRAME_BUFFER_OFFSET              = 0;
+}
+
+/*============================================================================*/
+/* R E G I O N   S Y M B O L                                                  */
+/*============================================================================*/
+
+define symbol __region_ATCM_start__                          = ATCM_PRV_START;
+define symbol __region_ATCM_end__                            = ATCM_PRV_START + ATCM_PRV_LENGTH - ATCM_END_ADDRESS_OFFSET;
+define symbol __region_BTCM_start__                          = BTCM_PRV_START;
+define symbol __region_BTCM_end__                            = BTCM_PRV_START + BTCM_PRV_LENGTH - BTCM_END_ADDRESS_OFFSET;
+define symbol __region_SYSTEM_RAM_start__                    = SYSTEM_RAM_ALIGN_START;
+define symbol __region_SYSTEM_RAM_end__                      = SYSTEM_RAM_ALIGN_START + SYSTEM_RAM_ALIGN_LENGTH - SYSTEM_RAM_END_ADDRESS_OFFSET;
+define symbol __region_SYSTEM_RAM_MIRROR_start__             = SYSTEM_RAM_MIRROR_PRV_START;
+define symbol __region_SYSTEM_RAM_MIRROR_end__               = SYSTEM_RAM_MIRROR_PRV_START + SYSTEM_RAM_MIRROR_PRV_LENGTH - SYSTEM_RAM_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_XSPI0_CS0_MIRROR_start__              = xSPI0_CS0_SPACE_MIRROR_PRV_START;
+define symbol __region_XSPI0_CS0_MIRROR_end__                = xSPI0_CS0_SPACE_MIRROR_PRV_START + xSPI0_CS0_SPACE_MIRROR_PRV_LENGTH - xSPI0_CS0_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_XSPI0_CS1_MIRROR_start__              = xSPI0_CS1_SPACE_MIRROR_PRV_START;
+define symbol __region_XSPI0_CS1_MIRROR_end__                = xSPI0_CS1_SPACE_MIRROR_PRV_START + xSPI0_CS1_SPACE_MIRROR_PRV_LENGTH - xSPI0_CS1_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_XSPI1_CS0_MIRROR_start__              = xSPI1_CS0_SPACE_MIRROR_PRV_START;
+define symbol __region_XSPI1_CS0_MIRROR_end__                = xSPI1_CS0_SPACE_MIRROR_PRV_START + xSPI1_CS0_SPACE_MIRROR_PRV_LENGTH - xSPI1_CS0_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_XSPI1_CS1_MIRROR_start__              = xSPI1_CS1_SPACE_MIRROR_PRV_START;
+define symbol __region_XSPI1_CS1_MIRROR_end__                = xSPI1_CS1_SPACE_MIRROR_PRV_START + xSPI1_CS1_SPACE_MIRROR_PRV_LENGTH - xSPI1_CS1_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_CS0_MIRROR_start__                    = CS0_SPACE_MIRROR_PRV_START;
+define symbol __region_CS0_MIRROR_end__                      = CS0_SPACE_MIRROR_PRV_START + CS0_SPACE_MIRROR_PRV_LENGTH - CS0_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_CS2_MIRROR_start__                    = CS2_SPACE_MIRROR_PRV_START;
+define symbol __region_CS2_MIRROR_end__                      = CS2_SPACE_MIRROR_PRV_START + CS2_SPACE_MIRROR_PRV_LENGTH - CS2_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_CS3_MIRROR_start__                    = CS3_SPACE_MIRROR_PRV_START;
+define symbol __region_CS3_MIRROR_end__                      = CS3_SPACE_MIRROR_PRV_START + CS3_SPACE_MIRROR_PRV_LENGTH - CS3_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_CS5_MIRROR_start__                    = CS5_SPACE_MIRROR_PRV_START;
+define symbol __region_CS5_MIRROR_end__                      = CS5_SPACE_MIRROR_PRV_START + CS5_SPACE_MIRROR_PRV_LENGTH - CS5_SPACE_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_XSPI0_CS0_start__                     = xSPI0_CS0_SPACE_PRV_START;
+define symbol __region_XSPI0_CS0_end__                       = xSPI0_CS0_SPACE_PRV_START + xSPI0_CS0_SPACE_PRV_LENGTH - xSPI0_CS0_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_XSPI0_CS1_start__                     = xSPI0_CS1_SPACE_PRV_START;
+define symbol __region_XSPI0_CS1_end__                       = xSPI0_CS1_SPACE_PRV_START + xSPI0_CS1_SPACE_PRV_LENGTH - xSPI0_CS1_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_XSPI1_CS0_start__                     = xSPI1_CS0_SPACE_PRV_START;
+define symbol __region_XSPI1_CS0_end__                       = xSPI1_CS0_SPACE_PRV_START + xSPI1_CS0_SPACE_PRV_LENGTH - xSPI1_CS0_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_XSPI1_CS1_start__                     = xSPI1_CS1_SPACE_PRV_START;
+define symbol __region_XSPI1_CS1_end__                       = xSPI1_CS1_SPACE_PRV_START + xSPI1_CS1_SPACE_PRV_LENGTH - xSPI1_CS1_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_CS0_start__                           = CS0_SPACE_PRV_START;
+define symbol __region_CS0_end__                             = CS0_SPACE_PRV_START + CS0_SPACE_PRV_LENGTH - CS0_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_CS2_start__                           = CS2_SPACE_PRV_START;
+define symbol __region_CS2_end__                             = CS2_SPACE_PRV_START + CS2_SPACE_PRV_LENGTH - CS2_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_CS3_start__                           = CS3_SPACE_PRV_START;
+define symbol __region_CS3_end__                             = CS3_SPACE_PRV_START + CS3_SPACE_PRV_LENGTH - CS3_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_CS5_start__                           = CS5_SPACE_PRV_START;
+define symbol __region_CS5_end__                             = CS5_SPACE_PRV_START + CS5_SPACE_PRV_LENGTH - CS5_SPACE_END_ADDRESS_OFFSET;
+define symbol __region_PCIE0_MIRROR_start__                  = PCIE0_MIRROR_PRV_START;
+define symbol __region_PCIE0_MIRROR_end__                    = PCIE0_MIRROR_PRV_START + PCIE0_MIRROR_PRV_LENGTH - PCIE0_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_PCIE1_MIRROR_start__                  = PCIE1_MIRROR_PRV_START;
+define symbol __region_PCIE1_MIRROR_end__                    = PCIE1_MIRROR_PRV_START + PCIE1_MIRROR_PRV_LENGTH - PCIE1_MIRROR_END_ADDRESS_OFFSET;
+define symbol __region_DDR_MIRROR0_start__                   = DDR_MIRROR0_PRV_START;
+define symbol __region_DDR_MIRROR0_end__                     = DDR_MIRROR0_PRV_START + DDR_MIRROR0_PRV_LENGTH - DDR_MIRROR0_END_ADDRESS_OFFSET;
+define symbol __region_DDR_MIRROR1_start__                   = DDR_MIRROR1_PRV_START;
+define symbol __region_DDR_MIRROR1_end__                     = DDR_MIRROR1_PRV_START + DDR_MIRROR1_PRV_LENGTH - DDR_MIRROR1_END_ADDRESS_OFFSET;
+define symbol __region_DDR_start__                           = DDR_PRV_START;
+define symbol __region_DDR_end__                             = DDR_PRV_START + DDR_PRV_LENGTH - DDR_END_ADDRESS_OFFSET;
+define symbol __region_PCIE0_start__                         = PCIE0_PRV_START;
+define symbol __region_PCIE0_end__                           = PCIE0_PRV_START + PCIE0_PRV_LENGTH - PCIE0_END_ADDRESS_OFFSET;
+define symbol __region_PCIE1_start__                         = PCIE1_PRV_START;
+define symbol __region_PCIE1_end__                           = PCIE1_PRV_START + PCIE1_PRV_LENGTH - PCIE1_END_ADDRESS_OFFSET;
+
+define symbol __region_RAM_start__                           = RAM_ADDRESS;
+define symbol __region_RAM_end__                             = RAM_END_ADDRESS;
+
+define symbol __region_D_LOADER_STACK_start__                = LOADER_STACK_ADDRESS;
+define symbol __region_D_LOADER_STACK_end__                  = LOADER_STACK_END_ADDRESS;
+
+define symbol __region_CACHE_start__                         = SYSTEM_RAM_ALIGN_START;
+define symbol __region_CACHE_end__                           = SYSTEM_RAM_ALIGN_START + SYSTEM_RAM_ALIGN_LENGTH - NONCACHE_OFFSET - SYSTEM_RAM_END_ADDRESS_OFFSET;
+
+define symbol __region_NONCACHE_INIT_start__                 = NONCACHE_PRV_START + NONCACHE_PRV_LENGTH - NONCACHE_OFFSET + NONCACHE_USAGE + NONCACHE_USAGE_ADJUSTMENT;
+define symbol __region_NONCACHE_INIT_end__                   = NONCACHE_PRV_START + NONCACHE_PRV_LENGTH - NONCACHE_END_OFFSET - NONCACHE_END_ADDRESS_OFFSET;
+
+define symbol __region_NONCACHE_start__                      = __region_NONCACHE_INIT_start__ + SYSTEM_RAM_MIRROR_OFFSET;
+define symbol __region_NONCACHE_end__                        = __region_NONCACHE_INIT_end__ + SYSTEM_RAM_MIRROR_OFFSET;
+
+define symbol __region_SHARED_NONCACHE_BUFFER_INIT_start__   = NONCACHE_PRV_START + NONCACHE_PRV_LENGTH - SHARED_NONCACHE_BUFFER_OFFSET;
+define symbol __region_SHARED_NONCACHE_BUFFER_INIT_end__     = NONCACHE_PRV_START + NONCACHE_PRV_LENGTH - SHARED_NONCACHE_BUFFER_END_OFFSET - NONCACHE_END_ADDRESS_OFFSET;
+
+define symbol __region_SHARED_NONCACHE_BUFFER_start__        = __region_SHARED_NONCACHE_BUFFER_INIT_start__ + SYSTEM_RAM_MIRROR_OFFSET;
+define symbol __region_SHARED_NONCACHE_BUFFER_end__          = __region_SHARED_NONCACHE_BUFFER_INIT_end__ + SYSTEM_RAM_MIRROR_OFFSET;
+
+if (isdefinedsymbol(CR52_0) || isdefinedsymbol(CR52_1))
+{
+    define symbol __region_LCDC_FRAME_BUFFER_start__         = DDR_MIRROR1_PRV_START + DDR_MIRROR1_PRV_LENGTH - LCDC_FRAME_BUFFER_OFFSET;
+    define symbol __region_LCDC_FRAME_BUFFER_end__           = DDR_MIRROR1_PRV_START + DDR_MIRROR1_PRV_LENGTH - DDR_MIRROR1_END_ADDRESS_OFFSET;
+}
+else
+{
+    define symbol __region_LCDC_FRAME_BUFFER_start__         = DDR_MIRROR0_PRV_START + DDR_MIRROR0_PRV_LENGTH - LCDC_FRAME_BUFFER_OFFSET;
+    define symbol __region_LCDC_FRAME_BUFFER_end__           = DDR_MIRROR0_PRV_START + DDR_MIRROR0_PRV_LENGTH - DDR_MIRROR0_END_ADDRESS_OFFSET;
+}
+
+/*============================================================================*/
+/* M E M O R Y   R E G I O N                                                  */
+/*============================================================================*/
+
+define region ATCM_region                        = mem:[from __region_ATCM_start__  to __region_ATCM_end__ ];
+define region BTCM_region                        = mem:[from __region_BTCM_start__  to __region_BTCM_end__ ];
+define region SYSTEM_RAM_region                  = mem:[from __region_SYSTEM_RAM_start__  to __region_SYSTEM_RAM_end__ ];
+define region SYSTEM_RAM_MIRROR_region           = mem:[from __region_SYSTEM_RAM_MIRROR_start__  to __region_SYSTEM_RAM_MIRROR_end__ ];
+define region XSPI0_CS0_MIRROR_region            = mem:[from __region_XSPI0_CS0_MIRROR_start__  to __region_XSPI0_CS0_MIRROR_end__ ];
+define region XSPI0_CS1_MIRROR_region            = mem:[from __region_XSPI0_CS1_MIRROR_start__  to __region_XSPI0_CS1_MIRROR_end__ ];
+define region XSPI1_CS0_MIRROR_region            = mem:[from __region_XSPI1_CS0_MIRROR_start__  to __region_XSPI1_CS0_MIRROR_end__ ];
+define region XSPI1_CS1_MIRROR_region            = mem:[from __region_XSPI1_CS1_MIRROR_start__  to __region_XSPI1_CS1_MIRROR_end__ ];
+define region CS0_MIRROR_region                  = mem:[from __region_CS0_MIRROR_start__  to __region_CS0_MIRROR_end__ ];
+define region CS2_MIRROR_region                  = mem:[from __region_CS2_MIRROR_start__  to __region_CS2_MIRROR_end__ ];
+define region CS3_MIRROR_region                  = mem:[from __region_CS3_MIRROR_start__  to __region_CS3_MIRROR_end__ ];
+define region CS5_MIRROR_region                  = mem:[from __region_CS5_MIRROR_start__  to __region_CS5_MIRROR_end__ ];
+define region XSPI0_CS0_region                   = mem:[from __region_XSPI0_CS0_start__  to __region_XSPI0_CS0_end__ ];
+define region XSPI0_CS1_region                   = mem:[from __region_XSPI0_CS1_start__  to __region_XSPI0_CS1_end__ ];
+define region XSPI1_CS0_region                   = mem:[from __region_XSPI1_CS0_start__  to __region_XSPI1_CS0_end__ ];
+define region XSPI1_CS1_region                   = mem:[from __region_XSPI1_CS1_start__  to __region_XSPI1_CS1_end__ ];
+define region CS0_region                         = mem:[from __region_CS0_start__  to __region_CS0_end__ ];
+define region CS2_region                         = mem:[from __region_CS2_start__  to __region_CS2_end__ ];
+define region CS3_region                         = mem:[from __region_CS3_start__  to __region_CS3_end__ ];
+define region CS5_region                         = mem:[from __region_CS5_start__  to __region_CS5_end__ ];
+define region PCIE0_MIRROR_region                = mem:[from __region_PCIE0_MIRROR_start__  to __region_PCIE0_MIRROR_end__ ];
+define region PCIE1_MIRROR_region                = mem:[from __region_PCIE1_MIRROR_start__  to __region_PCIE1_MIRROR_end__ ];
+define region DDR_MIRROR0_region                 = mem:[from __region_DDR_MIRROR0_start__  to __region_DDR_MIRROR0_end__ ];
+define region DDR_MIRROR1_region                 = mem:[from __region_DDR_MIRROR1_start__  to __region_DDR_MIRROR1_end__ ];
+define region DDR_region                         = mem:[from __region_DDR_start__  to __region_DDR_end__ ];
+define region PCIE0_region                       = mem:[from __region_PCIE0_start__  to __region_PCIE0_end__ ];
+define region PCIE1_region                       = mem:[from __region_PCIE1_start__  to __region_PCIE1_end__ ];
+
+define region RAM_region                         = mem:[from __region_RAM_start__   to __region_RAM_end__];
+define region D_LOADER_STACK_region              = mem:[from __region_D_LOADER_STACK_start__   to __region_D_LOADER_STACK_end__];
+define region NONCACHE_INIT_region               = mem:[from __region_NONCACHE_INIT_start__   to __region_NONCACHE_INIT_end__];
+define region NONCACHE_region                    = mem:[from __region_NONCACHE_start__   to __region_NONCACHE_end__];
+define region SHARED_NONCACHE_BUFFER_INIT_region = mem:[from __region_SHARED_NONCACHE_BUFFER_INIT_start__   to __region_SHARED_NONCACHE_BUFFER_INIT_end__];
+define region SHARED_NONCACHE_BUFFER_region      = mem:[from __region_SHARED_NONCACHE_BUFFER_start__   to __region_SHARED_NONCACHE_BUFFER_end__];
+define region LCDC_FRAME_BUFFER_region           = mem:[from __region_LCDC_FRAME_BUFFER_start__ to __region_LCDC_FRAME_BUFFER_end__];
+
+/*============================================================================*/
+/* B L O C K   L A Y O U T                                                    */
+/*============================================================================*/
+
+/*-----------------------------------------------*/
+/*  LOADER PROGRAM                               */
+/*-----------------------------------------------*/
+
+/* Place the functions to be used in the loader program (SSBL). */
+define block LDR_PRG_RBLOCK with fixed order, alignment = 8
+                             { ro code section .loader_text object startup_core.o,
+                               ro code object startup_core.o,
+                               ro code object system_core.o,
+                               ro code object startup.o,
+                               ro code object system.o,
+                               ro code object bsp_*.o,
+                               ro code object r_ioport.o,
+                               ro code object ABImem*.o,
+                               ro code object data_init.o,
+                               ro code object copy_init3.o,
+                               ro code section .warm_start }
+                               except { section .intvec*,
+                                        section .reset_handler };
+
+/* Place the variables in the loader program (SSBL). */
+define block LDR_DATA_WBLOCK with fixed order, alignment = 8
+                             { section .data object startup_core.o,
+                               section .data object system_core.o,
+                               section .data object startup.o,
+                               section .data object system.o,
+                               section .data object bsp_*.o,
+                               section .data object r_ioport.o,
+                               section .data object data_init.o,
+                               section .data object copy_init3.o,
+                               section .rodata object bsp_mpu_core.o,
+                               section .rodata object bsp_mmu_core.o,
+                               section .rodata object bsp_tzc400.o,
+                               section .rodata object bsp_register_protection.o,
+                               section .warm_start.data* };
+
+/* Place the variables in the loader program that do not have initial values. */
+define block LDR_DATA_ZBLOCK with alignment = 8
+                             { section .bss object startup_core.o,
+                               section .bss object system_core.o,
+                               section .bss object startup.o,
+                               section .bss object system.o,
+                               section .bss object bsp_*.o,
+                               section .bss object r_ioport.o,
+                               section .bss object data_init.o,
+                               section .bss object copy_init3.o,
+                               section .warm_start.bss*,
+                               section .ttbr };
+
+/* Place Software_Reset_Handler, which is called when a software reset is executed in the CA55 project. */
+define block SOFTWARE_RESET_ZBLOCK
+                             { section .software_reset };
+
+/*-----------------------------------------------*/
+/*  AArch32 STACK                                */
+/*-----------------------------------------------*/
+
+/* Place the stacks used in AArch32 */
+define block LOADER_STACK with fixed order
+                             { block SYS_STACK with alignment = 8 { rw section .sys_stack },
+                               block SVC_STACK with alignment = 8 { rw section .svc_stack },
+                               block IRQ_STACK with alignment = 8 { rw section .irq_stack },
+                               block FIQ_STACK with alignment = 8 { rw section .fiq_stack },
+                               block UND_STACK with alignment = 8 { rw section .und_stack },
+                               block ABT_STACK with alignment = 8 { rw section .abt_stack }};
+
+/*-----------------------------------------------*/
+/*  VECTOR TABLE                                 */
+/*-----------------------------------------------*/
+
+/* Place the vector table. */
+define block VECTOR_RBLOCK with fixed order
+                           { block VECTOR_RBLOCK_0x000 with alignment = 0x20 { section .intvec },
+                             block VECTOR_RBLOCK_0x080 with alignment = 0x80 { section .intvec_0x080 },
+                             block VECTOR_RBLOCK_0x100 with alignment = 0x80 { section .intvec_0x100 },
+                             block VECTOR_RBLOCK_0x180 with alignment = 0x80 { section .intvec_0x180 },
+                             block VECTOR_RBLOCK_0x200 with alignment = 0x80 { section .intvec_0x200 },
+                             block VECTOR_RBLOCK_0x280 with alignment = 0x80 { section .intvec_0x280 },
+                             block VECTOR_RBLOCK_0x300 with alignment = 0x80 { section .intvec_0x300 },
+                             block VECTOR_RBLOCK_0x380 with alignment = 0x80 { section .intvec_0x380 },
+                             block VECTOR_RBLOCK_0x400 with alignment = 0x80 { section .intvec_0x400 },
+                             block VECTOR_RBLOCK_0x480 with alignment = 0x80 { section .intvec_0x480 },
+                             block VECTOR_RBLOCK_0x500 with alignment = 0x80 { section .intvec_0x500 },
+                             block VECTOR_RBLOCK_0x580 with alignment = 0x80 { section .intvec_0x580 },
+                             block VECTOR_RBLOCK_0x600 with alignment = 0x80 { section .intvec_0x600 },
+                             block VECTOR_RBLOCK_0x680 with alignment = 0x80 { section .intvec_0x680 },
+                             block VECTOR_RBLOCK_0x700 with alignment = 0x80 { section .intvec_0x700 },
+                             block VECTOR_RBLOCK_0x780 with alignment = 0x80 { section .intvec_0x780 }};
+
+/*-----------------------------------------------*/
+/*  USER PROGRAM                                 */
+/*-----------------------------------------------*/
+
+/* Place the functions to be used in the user program (Programs other than SSBL). */
+define block USER_PRG_RBLOCK with alignment = 8
+                             { ro code };
+
+/* Place the variables to be used in the user program (Programs other than SSBL). */
+define block USER_DATA_WBLOCK with fixed order, alignment = 8
+                             { section .data,
+                               section __DLIB_PERTHREAD };
+
+/* Place the variables in the user program (Programs other than SSBL) that do not have initial values. */
+define block USER_DATA_ZBLOCK with alignment = 8
+                             { section .bss };
+
+/* Variables placed here will not be cleared to 0. */
+define block NOINIT_BLOCK with alignment = 8
+                             { zeroinit };
+
+/*-----------------------------------------------*/
+/*  HEAP                                         */
+/*-----------------------------------------------*/
+
+/* Place variables to secure heap area. */
+define block HEAP_BLOCK with alignment = 8
+                             { rw section HEAP };
+
+/*-----------------------------------------------*/
+/*  AArch64 STACK                                */
+/*-----------------------------------------------*/
+
+/* Place the stack used in AArch64. */
+define block AARCH64_STACK with alignment = 8
+                             { rw section .aarch64_stack* };
+
+/*-----------------------------------------------*/
+/*  THREAD STACK                                 */
+/*-----------------------------------------------*/
+/* Place the stack mainly used in free-RTOS. */
+define block THREAD_STACK with alignment = 8
+                             { rw section .stack* };
+
+/*-----------------------------------------------*/
+/*  NONCACHE                                     */
+/*-----------------------------------------------*/
+
+/* Place the noncache variables. */
+define block NONCACHE_WBLOCK with fixed order
+                             { block USER_DATA_NONCACHE_WBLOCK with alignment = 8 { section .data_noncache* },
+                               block DMAC_LINK_MODE_WBLOCK with alignment = 8 { section .dmac_link_mode* },
+                               block NONCACHE_BUFFER_WBLOCK with alignment = 32 { section .noncache_buffer* }};
+
+/* Place the noncache variables together that do not have initial values. */
+define block NONCACHE_ZBLOCK with fixed order
+                             { block USER_DATA_NONCACHE_ZBLOCK with alignment = 8 { zi section .data_noncache* },
+                               block DMAC_LINK_MODE_ZBLOCK with alignment = 8 { zi section .dmac_link_mode* },
+                               block NONCACHE_BUFFER_ZBLOCK with alignment = 32 { zi section .noncache_buffer* }};
+
+/* Place the core common noncache variables. */
+define block SHARED_NONCACHE_BUFFER_WBLOCK with alignment = 32
+                             { section .shared_noncache_buffer* };
+
+/* Place the core common noncache variables that do not have initial values. */
+define block SHARED_NONCACHE_BUFFER_ZBLOCK with alignment = 32
+                             { zi section .shared_noncache_buffer* };
+
+/* Place the noncache variables to be used in LCDC. */
+define block LCDC_FRAME_BUFFER_ZBLOCK with alignment = 512
+                             { section .lcdc_frame_buffer* };
+
+/*-----------------------------------------------*/
+/*  SPECIFYING INITIALIZATION                    */
+/*-----------------------------------------------*/
+
+/* All variables are no longer initialized by iar_data_init.(Initialization by BSP is still performed.) */
+/* If there are sections that you want to initialize by iar_data_init, add the target sections inside except. */
+
+do not initialize { zeroinit }
+                    except{};
+
+/*============================================================================*/
+/* D D S C   S Y M B O L                                                      */
+/*============================================================================*/
+
+/* Defines the ddsc symbol, which is used in multi-core projects and to calculate the usage of each region.
+ * If you define a variable called __DDSC_***_END, the address of that variable will be the address of each ddsc symbol.
+ * (By default, it is defined in fsp/src/bsp/cmsis/Device/RENESAS/Source/system.c.) */
+
+export symbol __region_CACHE_start__;
+export symbol __region_CACHE_end__;
+export symbol __region_NONCACHE_INIT_start__;
+export symbol __region_NONCACHE_INIT_end__;
+
+define exported symbol __ddsc_ATCM_CR52_0_START       = ATCM_PRV_START;
+define exported symbol __ddsc_BTCM_CR52_0_START       = BTCM_PRV_START;
+define exported symbol __ddsc_ATCM_CR52_1_START       = ATCM_PRV_START;
+define exported symbol __ddsc_BTCM_CR52_1_START       = BTCM_PRV_START;
+define exported symbol __ddsc_SYSTEM_RAM_START        = SYSTEM_RAM_ALIGN_START;
+define exported symbol __ddsc_NONCACHE_START          = NONCACHE_PRV_START;
+
+if ((isdefinedsymbol(ATCM_CR52_0_START)) && (isdefinedsymbol(BTCM_CR52_0_START)))
+{
+    define exported symbol __ddsc_ATCM_CR52_1_END     = __ddsc_ATCM_CR52_1_START;
+    define exported symbol __ddsc_BTCM_CR52_1_END     = __ddsc_BTCM_CR52_1_START;
+    define exported symbol __ddsc_SYSTEM_RAM_END      = __ddsc_SYSTEM_RAM_START;
+}
+else if ((isdefinedsymbol(ATCM_CR52_1_START)) && (isdefinedsymbol(BTCM_CR52_1_START)))
+{
+    define exported symbol __ddsc_ATCM_CR52_0_END     = __ddsc_ATCM_CR52_0_START;
+    define exported symbol __ddsc_BTCM_CR52_0_END     = __ddsc_BTCM_CR52_0_START;
+    define exported symbol __ddsc_SYSTEM_RAM_END      = __ddsc_SYSTEM_RAM_START;
+}
+else
+{
+    define exported symbol __ddsc_ATCM_CR52_0_END     = __ddsc_ATCM_CR52_0_START;
+    define exported symbol __ddsc_BTCM_CR52_0_END     = __ddsc_BTCM_CR52_0_START;
+    define exported symbol __ddsc_ATCM_CR52_1_END     = __ddsc_ATCM_CR52_1_START;
+    define exported symbol __ddsc_BTCM_CR52_1_END     = __ddsc_BTCM_CR52_1_START;
+}
+
+if (!isdefinedsymbol(NONCACHE_START))
+{
+    define exported symbol __ddsc_NONCACHE_END = __ddsc_NONCACHE_START;
+}
+
+if (1 == _RZN_ORDINAL)
+{
+    define exported symbol __ddsc_SECONDARY_START    = 0;
+    define exported symbol __ddsc_SECONDARY_END      = 1;
+}
+else
+{
+    define exported symbol __ddsc_SECONDARY_START    = 1;
+    define exported symbol __ddsc_SECONDARY_END      = 1;
+}
+
+define block ATCM_END_block       { section .ddsc_atcm_end };
+define block BTCM_END_block       { section .ddsc_btcm_end };
+define block SYSTEM_RAM_END_block { section .ddsc_system_ram_end };
+define block NONCACHE_END_block   { section .ddsc_noncache_end };
+
+/*============================================================================*/
+/* S E C T I O N   L A Y O U T                                                */
+/*============================================================================*/
+place in ATCM_region { };
+place in BTCM_region { };
+place in SYSTEM_RAM_region { };
+place in SYSTEM_RAM_MIRROR_region { };
+place in XSPI0_CS0_MIRROR_region { };
+place in XSPI0_CS1_MIRROR_region { };
+place in XSPI1_CS0_MIRROR_region { };
+place in XSPI1_CS1_MIRROR_region { };
+place in CS0_MIRROR_region { };
+place in CS2_MIRROR_region { };
+place in CS3_MIRROR_region { };
+place in CS5_MIRROR_region { };
+place in XSPI0_CS0_region { };
+place in XSPI0_CS1_region { };
+place in XSPI1_CS0_region { };
+place in XSPI1_CS1_region { };
+place in CS0_region { };
+place in CS2_region { };
+place in CS3_region { };
+place in CS5_region { };
+place in PCIE0_MIRROR_region { };
+place in PCIE1_MIRROR_region { };
+place in DDR_MIRROR0_region { };
+place in DDR_MIRROR1_region { };
+place in DDR_region { };
+place in PCIE0_region { };
+place in PCIE1_region { };
+
+place at address mem: INTVEC_ADDRESS            { block VECTOR_RBLOCK };
+
+place at start of D_LOADER_STACK_region         { block LDR_PRG_RBLOCK };
+place in D_LOADER_STACK_region                  { block LDR_DATA_WBLOCK };
+place in D_LOADER_STACK_region                  { block LDR_DATA_ZBLOCK,
+                                                  block SOFTWARE_RESET_ZBLOCK,
+                                                  block LOADER_STACK };
+place in D_LOADER_STACK_region                  { last block BTCM_END_block };
+
+place at start of RAM_region                    { block USER_PRG_RBLOCK };
+place in RAM_region                             { readonly,
+                                                  readwrite };
+place in RAM_region                             { block USER_DATA_WBLOCK };
+place in RAM_region                             { block USER_DATA_ZBLOCK,
+                                                  block NOINIT_BLOCK,
+                                                  block HEAP_BLOCK,
+                                                  block AARCH64_STACK,
+                                                  block THREAD_STACK };
+place in RAM_region                             { last block ATCM_END_block };
+place in RAM_region                             { last block SYSTEM_RAM_END_block };
+
+if (0 == SYSTEM_RAM_MIRROR_OFFSET)
+{
+    place in NONCACHE_INIT_region               { block NONCACHE_WBLOCK };
+    place in NONCACHE_INIT_region               { block NONCACHE_ZBLOCK };
+    place in NONCACHE_INIT_region               { last block NONCACHE_END_block };
+
+    place in SHARED_NONCACHE_BUFFER_INIT_region { block SHARED_NONCACHE_BUFFER_WBLOCK };
+    place in SHARED_NONCACHE_BUFFER_INIT_region { block SHARED_NONCACHE_BUFFER_ZBLOCK };
+}
+else
+{
+    place in NONCACHE_INIT_region with mirroring to __region_NONCACHE_start__
+                                                { block NONCACHE_WBLOCK };
+    place in NONCACHE_INIT_region               { block NONCACHE_ZBLOCK };
+    place in NONCACHE_INIT_region               { last block NONCACHE_END_block };
+
+    place in SHARED_NONCACHE_BUFFER_INIT_region with mirroring to __region_SHARED_NONCACHE_BUFFER_start__
+                                                { block SHARED_NONCACHE_BUFFER_WBLOCK };
+    place in SHARED_NONCACHE_BUFFER_INIT_region { block SHARED_NONCACHE_BUFFER_ZBLOCK };
+}
+
+place in LCDC_FRAME_BUFFER_region               { block LCDC_FRAME_BUFFER_ZBLOCK };

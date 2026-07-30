@@ -152,7 +152,7 @@
                 </option>
                 <option>
                     <name>OCImagesPath1</name>
-                    <state>C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_app\Debug_EK52_App1_STANDARD\Exe\RZN2L_bsp_xspi0bootx1_app.out</state>
+                    <state>$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\Debug_EK52_App1_STANDARD\Exe\RZN2L_bsp_xspi0bootx1_app.out</state>
                 </option>
                 <option>
                     <name>OCImagesSuppressCheck2</name>

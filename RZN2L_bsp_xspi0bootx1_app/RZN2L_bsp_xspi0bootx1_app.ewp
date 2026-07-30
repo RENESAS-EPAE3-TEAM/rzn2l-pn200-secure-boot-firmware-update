@@ -955,7 +955,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$/script/fsp_xspi0_boot.icf</state>
+                    <state>$PROJ_DIR$\script\fsp_xspi0_boot_m.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
