@@ -35,11 +35,11 @@
         <CpuHaltOnBreakpointSet>0</CpuHaltOnBreakpointSet>
     </Jet>
     <ArmDriver>
-        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
         <EnableCache>1</EnableCache>
+        <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>1216399186</Checksum>
+        <Checksum>1425976789</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -54,8 +54,8 @@
     <SWOManager>
         <SamplingDivider>8192</SamplingDivider>
         <OverrideClock>0</OverrideClock>
-        <CpuClock>25895989920530497</CpuClock>
-        <SwoClock>25896153130336335</SwoClock>
+        <CpuClock>7954854873796670571</CpuClock>
+        <SwoClock>5715719247974462309</SwoClock>
         <DataLogMode>0</DataLogMode>
         <ItmPortsEnabled>63</ItmPortsEnabled>
         <ItmTermIOPorts>1</ItmTermIOPorts>
@@ -109,8 +109,9 @@
         <Bp1>_ 1 "EMUL_CODE" "{$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.310.5" 0 0 1 "" 0 "" 0</Bp1>
         <Bp2>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.95.5" 0 0 1 "" 0 "" 0</Bp2>
         <Bp3>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_loader\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.92.1" 0 0 1 "" 0 "" 0</Bp3>
-        <Bp4>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_loader\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.106.1" 0 0 1 "" 0 "" 0</Bp4>
+        <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_loader\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.106.1" 0 0 1 "" 0 "" 0</Bp4>
         <Bp5>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.143.1" 0 0 1 "" 0 "" 0</Bp5>
-        <Count>6</Count>
+        <Bp6>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.202.5" 0 0 1 "" 0 "" 0</Bp6>
+        <Count>7</Count>
     </Breakpoints2>
 </settings>

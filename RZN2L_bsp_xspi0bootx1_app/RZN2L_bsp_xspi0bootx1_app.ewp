@@ -249,6 +249,8 @@
                     <state>_RZN_ORDINAL=1</state>
                     <state>_RZN_CORE=CR52_0</state>
                     <state>_RENESAS_RZN_</state>
+                    <state>USE_HRAM</state>
+                    <state>TEMPORARY_MEASURES_WHEN_USING_QSPI_AND_HYPERFLASH_AT_THE_SAME_TIME</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -923,7 +925,7 @@
                 </option>
                 <option>
                     <name>IlinkConfigDefines</name>
-                    <state></state>
+                    <state>USE_HRAM=1</state>
                 </option>
                 <option>
                     <name>IlinkMapFile</name>
@@ -955,7 +957,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\script\fsp_xspi0_boot_m.icf</state>
+                    <state>$PROJ_DIR$/script/fsp_xspi0_boot.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -2653,7 +2655,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.50.1.69462</state>
+                    <state>9.70.2.18199</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -3436,7 +3438,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>RZN2L_bsp_xspi0bootx1_app.srec</state>
+                    <state>RZN2L_bsp_xspi0bootx1_app.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -3444,7 +3446,7 @@
                 </option>
                 <option>
                     <name>OOCObjCopyEnable</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
             </data>
         </settings>
@@ -3945,7 +3947,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.50.1.69462</state>
+                    <state>9.70.2.18199</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>

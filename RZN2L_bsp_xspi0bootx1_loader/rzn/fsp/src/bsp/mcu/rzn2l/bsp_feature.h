@@ -441,7 +441,11 @@ FSP_HEADER
 #define BSP_FEATURE_XSPI_DEVICE_1_MIRROR_START_ADDRESS         (0x48000000U)
 #define BSP_FEATURE_XSPI_DEVICE_1_START_ADDRESS                (0x68000000U)
 #define BSP_FEATURE_XSPI_DEVICE_ADDRESS_SPACE_SIZE             (0x8000000U)
-#define BSP_FEATURE_XSPI_HAS_AXI_BRIDGE                        (0U)
+#if defined(_RENESAS_RZN_) && defined(USE_HRAM)
+ #define BSP_FEATURE_XSPI_HAS_AXI_BRIDGE                        (1U)
+#else
+ #define BSP_FEATURE_XSPI_HAS_AXI_BRIDGE                        (0U)
+#endif
 #define BSP_FEATURE_XSPI_NUM_CHIP_SELECT                       (2U)
 #define BSP_FEATURE_XSPI_VOLTAGE_SETTING_SUPPORTED             (0U)
 

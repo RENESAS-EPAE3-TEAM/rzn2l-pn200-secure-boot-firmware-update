@@ -28,18 +28,18 @@
         <JetConnSerialNo>89256</JetConnSerialNo>
         <JetConnFoundProbes />
         <PrevWtdReset>Hardware</PrevWtdReset>
-        <OnlineReset>Hardware</OnlineReset>
+        <OnlineReset>Software</OnlineReset>
         <DisableInterrupts>0</DisableInterrupts>
-        <LeaveRunning>0</LeaveRunning>
+        <LeaveRunning>1</LeaveRunning>
         <MultiCoreRunAll>0</MultiCoreRunAll>
         <CpuHaltOnBreakpointSet>0</CpuHaltOnBreakpointSet>
     </Jet>
     <ArmDriver>
-        <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
+        <EnableCache>1</EnableCache>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>2274125666</Checksum>
+        <Checksum>3206998352</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -55,8 +55,8 @@
     <SWOManager>
         <SamplingDivider>8192</SamplingDivider>
         <OverrideClock>0</OverrideClock>
-        <CpuClock>0</CpuClock>
-        <SwoClock>15</SwoClock>
+        <CpuClock>1853862451040</CpuClock>
+        <SwoClock>1853862455968</SwoClock>
         <DataLogMode>0</DataLogMode>
         <ItmPortsEnabled>63</ItmPortsEnabled>
         <ItmTermIOPorts>1</ItmTermIOPorts>
@@ -156,8 +156,7 @@
         <Bp11>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.276.5" 0 0 1 "" 0 "" 0</Bp11>
         <Bp12>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c}.327.5" 0 0 1 "" 0 "" 0</Bp12>
         <Bp13>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\src\fsp_mod\startup.c}.202.5" 0 0 1 "" 0 "" 0</Bp13>
-        <Bp14>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn_gen\main.c}.107.21" 0 0 1 "" 0 "" 0</Bp14>
-        <Bp15>_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_app\rzn_gen\sample_thread.c}.51.21" 0 0 1 "" 0 "" 0</Bp15>
-        <Count>16</Count>
+        <Bp14>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\hal_entry.c}.271.5" 0 0 1 "" 0 "" 0</Bp14>
+        <Count>15</Count>
     </Breakpoints2>
 </settings>

@@ -379,3 +379,400 @@ Resolving dependencies...
 Build succeeded
 
 Live logging to 'C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\BuildLog.log' enabled.
+
+Live logging to 'C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\BuildLog.log' enabled.
+
+RZN2L_bsp_xspi0bootx1_loader - Debug
+Cleaning... 332 files.
+Clean succeeded
+
+RZN2L_bsp_xspi0bootx1_loader - Debug
+Cleaning... 0 files.
+bsp_address_expander.c
+bsp_cache.c
+bsp_cache_core.c
+bsp_clocks.c
+bsp_common.c
+bsp_ddr.c
+bsp_ddr_fw_param.c
+bsp_delay.c
+bsp_delay_core.c
+bsp_io.c
+bsp_irq.c
+bsp_irq_core.c
+bsp_irq_sense.c
+bsp_loader_param.c
+bsp_mpu_core.c
+bsp_sbrk.c
+bsp_register_protection.c
+bsp_reset.c
+bsp_semaphore.c
+bsp_tzc400.c
+bsp_slave_stop.c
+r_ioport.c
+startup.c
+r_xspi_qspi.c
+r_sci_uart.c
+startup_core.c
+system.c
+system_core.c
+common_data.c
+hal_data.c
+main.c
+pin_data.c
+vector_data.c
+hal_entry.c
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(178) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(311) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(60) : Warning[Pe177]: function "ssbl_print_manifest_summary" was declared but never referenced
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(126) : Warning[Pe177]: function "ssbl_print_deploy_status" was declared but never referenced
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(47) : Warning[Pa082]: undefined behavior: the order of volatile accesses is undefined in this statement
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(52) : Warning[Pa082]: undefined behavior: the order of volatile accesses is undefined in this statement
+loader_table.c
+r_cip_drv_api.c
+r_otp_drv.c
+r_rsip_data.c
+r_rsip_func016.c
+r_rsip.c
+r_rsip_ecc.c
+r_rsip_func022.c
+r_rsip_func017.c
+r_rsip_aes.c
+r_rsip_func023.c
+r_rsip_func028.c
+r_rsip_func029.c
+r_rsip_func027.c
+r_rsip_func030.c
+r_rsip_func032.c
+r_rsip_func031.c
+r_rsip_func033.c
+r_rsip_func034.c
+r_rsip_func040.c
+r_rsip_func041.c
+r_rsip_func043.c
+r_rsip_func044.c
+r_rsip_func045.c
+r_rsip_func046.c
+r_rsip_func047.c
+r_rsip_func051.c
+r_rsip_func053.c
+r_rsip_func050.c
+r_rsip_func055.c
+r_rsip_func052.c
+r_rsip_func057.c
+r_rsip_func054.c
+r_rsip_func060.c
+r_rsip_func059.c
+r_rsip_func056.c
+r_rsip_func058.c
+r_rsip_func066.c
+r_rsip_func062.c
+r_rsip_func076.c
+r_rsip_func077.c
+r_rsip_func084.c
+r_rsip_func085.c
+r_rsip_func061.c
+r_rsip_func086.c
+r_rsip_func087.c
+r_rsip_func073.c
+r_rsip_func091.c
+r_rsip_func100.c
+r_rsip_func088.c
+r_rsip_func089.c
+r_rsip_func101.c
+r_rsip_func102.c
+r_rsip_func103.c
+r_rsip_func205.c
+r_rsip_func206.c
+r_rsip_func215.c
+r_rsip_func216.c
+r_rsip_func220.c
+r_rsip_func221.c
+r_rsip_func300.c
+r_rsip_func301.c
+r_rsip_func302.c
+r_rsip_func303.c
+r_rsip_func304.c
+r_rsip_func305.c
+r_rsip_func306.c
+r_rsip_func307.c
+r_rsip_func308.c
+r_rsip_func309.c
+r_rsip_func310.c
+r_rsip_func311.c
+r_rsip_func401.c
+r_rsip_func402.c
+r_rsip_func403.c
+r_rsip_func400.c
+r_rsip_func405.c
+r_rsip_func404.c
+r_rsip_func420.c
+r_rsip_func406.c
+r_rsip_func421.c
+r_rsip_func422.c
+r_rsip_func423.c
+r_rsip_func431.c
+r_rsip_func432.c
+r_rsip_func433.c
+r_rsip_func434.c
+r_rsip_func435.c
+r_rsip_func436.c
+r_rsip_func440.c
+r_rsip_func441.c
+r_rsip_func443.c
+r_rsip_func450.c
+r_rsip_func501.c
+r_rsip_func502.c
+r_rsip_otf.c
+r_rsip_hal.c
+r_rsip_otp.c
+r_rsip_kdf.c
+r_rsip_p00.c
+r_rsip_p01.c
+r_rsip_p02.c
+r_rsip_p03.c
+r_rsip_p06.c
+r_rsip_p04.c
+r_rsip_p07.c
+r_rsip_p08.c
+r_rsip_p0b.c
+r_rsip_p0c.c
+r_rsip_p0d.c
+r_rsip_p0e.c
+r_rsip_p0f.c
+r_rsip_p10.c
+r_rsip_p16.c
+r_rsip_p15.c
+r_rsip_p17.c
+r_rsip_p18.c
+r_rsip_p19.c
+r_rsip_p1b.c
+r_rsip_p1a.c
+r_rsip_p1c.c
+r_rsip_p1d.c
+r_rsip_p1e.c
+r_rsip_p1f.c
+r_rsip_p20.c
+r_rsip_p21.c
+r_rsip_p25.c
+r_rsip_p29a.c
+r_rsip_p29f.c
+r_rsip_p29t.c
+r_rsip_p29i.c
+r_rsip_p29u.c
+r_rsip_p2c.c
+r_rsip_p2d.c
+r_rsip_p24.c
+r_rsip_p2e.c
+r_rsip_p32a.c
+r_rsip_p32f.c
+r_rsip_p2a.c
+r_rsip_p32i.c
+r_rsip_p32t.c
+r_rsip_p2b.c
+r_rsip_p32u.c
+r_rsip_p34a.c
+r_rsip_p34i.c
+r_rsip_p34f.c
+r_rsip_p34t.c
+r_rsip_p36a.c
+r_rsip_p34u.c
+r_rsip_p36f.c
+r_rsip_p36i.c
+r_rsip_p36t.c
+r_rsip_p36u.c
+r_rsip_p37.c
+r_rsip_p38.c
+r_rsip_p3c.c
+r_rsip_p3d.c
+r_rsip_p40.c
+r_rsip_p41f.c
+r_rsip_p41i.c
+r_rsip_p41u.c
+r_rsip_p42.c
+r_rsip_p43.c
+r_rsip_p44f.c
+r_rsip_p3a.c
+r_rsip_p44i.c
+r_rsip_p3b.c
+r_rsip_p44u.c
+r_rsip_p47f.c
+r_rsip_p45.c
+r_rsip_p47i.c
+r_rsip_p47u.c
+r_rsip_p48f.c
+r_rsip_p48u.c
+r_rsip_p48i.c
+r_rsip_p50f.c
+r_rsip_p4a.c
+r_rsip_p50u.c
+r_rsip_p50i.c
+r_rsip_p4c.c
+r_rsip_p53.c
+r_rsip_p54.c
+r_rsip_p56.c
+r_rsip_p4d.c
+r_rsip_p57.c
+r_rsip_p59.c
+r_rsip_p62.c
+r_rsip_p60.c
+r_rsip_p6d.c
+r_rsip_p63.c
+r_rsip_p6e.c
+r_rsip_p6f.c
+r_rsip_p70f.c
+r_rsip_p70i.c
+r_rsip_p70s.c
+r_rsip_p70r.c
+r_rsip_p70u.c
+r_rsip_p75i.c
+r_rsip_p75r.c
+r_rsip_p75s.c
+r_rsip_p75f.c
+r_rsip_p75u.c
+r_rsip_p79.c
+r_rsip_p7b.c
+r_rsip_p7a.c
+r_rsip_p7c.c
+r_rsip_p80.c
+r_rsip_p8f.c
+r_rsip_p90.c
+r_rsip_p93.c
+r_rsip_p92.c
+r_rsip_p95f.c
+r_rsip_p95i.c
+r_rsip_p95u.c
+r_rsip_p98f.c
+r_rsip_p98i.c
+r_rsip_p98u.c
+r_rsip_p9d.c
+r_rsip_p9e.c
+r_rsip_pa1f.c
+r_rsip_p9f.c
+r_rsip_pa1i.c
+r_rsip_pa1u.c
+r_rsip_pa4i.c
+r_rsip_pa4f.c
+r_rsip_pa4u.c
+r_rsip_pa8.c
+r_rsip_paa.c
+r_rsip_pa9.c
+r_rsip_pab.c
+r_rsip_pb1.c
+r_rsip_pb3f.c
+r_rsip_pb3i.c
+r_rsip_pb2.c
+r_rsip_pb3u.c
+r_rsip_pb6i.c
+r_rsip_pb6u.c
+r_rsip_pb6f.c
+r_rsip_pb9f.c
+r_rsip_pb9i.c
+r_rsip_pb9u.c
+r_rsip_pc2f.c
+r_rsip_pc2i.c
+r_rsip_pc2u.c
+r_rsip_pe3.c
+r_rsip_pe0.c
+r_rsip_pe2.c
+r_rsip_pe4.c
+r_rsip_pe5e.c
+r_rsip_pe5f.c
+r_rsip_pe1.c
+r_rsip_pe5i.c
+r_rsip_pe5s.c
+r_rsip_pe5r.c
+r_rsip_pe5u.c
+r_rsip_pe6.c
+r_rsip_pe8.c
+r_rsip_pe9.c
+r_rsip_pe7.c
+r_rsip_pea.c
+r_rsip_pec.c
+r_rsip_peb.c
+r_rsip_pedi.c
+r_rsip_peef.c
+r_rsip_pedf.c
+r_rsip_peei.c
+r_rsip_pf1.c
+r_rsip_pf0.c
+r_rsip_pf3.c
+r_rsip_pf4.c
+r_rsip_pf5.c
+r_rsip_pf7.c
+r_rsip_pf8.c
+r_rsip_pfa.c
+r_rsip_pf9.c
+r_rsip_pf6.c
+r_rsip_primitive.c
+r_rsip_pki.c
+r_rsip_reg.c
+r_rsip_private.c
+r_rsip_rzt_rzn.c
+r_rsip_wrapper.c
+r_rsip_rsa.c
+r_rsip_sha.c
+r_sb_api.c
+r_sb_cmn.c
+r_sb_cmn_drv.c
+r_sb_manifest.c
+r_sb_sb.c
+rsip_check_param.c
+secure_app_deploy.c
+siorw.c
+secure_app_verify.c
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(50) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(54) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(58) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(62) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(66) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(70) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(74) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(78) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(82) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(86) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(90) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(94) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(98) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(102) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(106) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(110) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(114) : Warning[Pe188]: enumerated type mixed with another type
+siochar.c
+RZN2L_bsp_xspi0bootx1_loader.out
+RZN2L_bsp_xspi0bootx1_loader.bin
+RZN2L_bsp_xspi0bootx1_loader.sbd
+[INFO] Output file "C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\Debug\Exe\RZN2L_bsp_xspi0bootx1_loader.sbd" does not exist. Proceeding with RASC invocation...
+Generating Smart Bundle..
+
+Total number of errors: 0
+Total number of warnings: 23
+Resolving dependencies...
+Build succeeded
+
+RZN2L_bsp_xspi0bootx1_loader - Debug
+Build is up to date
+Resolving dependencies...
+Build succeeded
+
+RZN2L_bsp_xspi0bootx1_loader - Debug
+secure_app_verify.c
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\secure_app_verify.c(152) : Warning[Pe177]: function "verify_code_cert_layout" was declared but never referenced
+secure_app_deploy.c
+hal_entry.c
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(178) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(311) : Warning[Pe188]: enumerated type mixed with another type
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(43) : Warning[Pe177]: function "ssbl_print_verify_status" was declared but never referenced
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(60) : Warning[Pe177]: function "ssbl_print_manifest_summary" was declared but never referenced
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(100) : Warning[Pe177]: function "ssbl_print_legacy_manifest_summary" was declared but never referenced
+C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\src\hal_entry.c(126) : Warning[Pe177]: function "ssbl_print_deploy_status" was declared but never referenced
+RZN2L_bsp_xspi0bootx1_loader.out
+RZN2L_bsp_xspi0bootx1_loader.bin
+RZN2L_bsp_xspi0bootx1_loader.sbd
+[INFO] Input file "C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\Debug\Exe\RZN2L_bsp_xspi0bootx1_loader.out" is newer than output file "C:\Users\MyPC\Desktop\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\iar_project\RZN2L_bsp_xspi0bootx1_loader\Debug\Exe\RZN2L_bsp_xspi0bootx1_loader.sbd". Proceeding with RASC invocation...
+Generating Smart Bundle..
+
+Total number of errors: 0
+Total number of warnings: 7
+Resolving dependencies...
+Build succeeded
