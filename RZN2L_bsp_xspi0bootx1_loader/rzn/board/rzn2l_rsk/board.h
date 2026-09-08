@@ -1,4 +1,3 @@
-/* This is a placeholder file that will never be extracted. */
 /*
 * Copyright (c) 2020 - 2025 Renesas Electronics Corporation and/or its affiliates
 *

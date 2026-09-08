@@ -446,3 +446,5 @@ const ioport_cfg_t g_bsp_pin_cfg = {
     .p_pin_cfg_data = &g_bsp_pin_cfg_data[0],
     .p_extend = &g_ioport_cfg_extend,
 };
+
+

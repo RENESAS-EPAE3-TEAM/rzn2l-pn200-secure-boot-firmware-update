@@ -247,7 +247,8 @@
                 </option>
                 <option>
                     <name>CCDefines</name>
-                    <state></state>
+                    <state>USE_HRAM</state>
+                    <state>TEMPORARY_MEASURES_WHEN_USING_QSPI_AND_HYPERFLASH_AT_THE_SAME_TIME</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -2347,6 +2348,9 @@
                 <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\bsp\bsp_pin_cfg.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\bsp\bsp_pin_cfg.h.bak</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\r_ioport_cfg.h</name>
             </file>
             <weakFile>
@@ -2354,6 +2358,9 @@
             </weakFile>
             <file>
                 <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\r_sci_uart_cfg.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\r_xspi_hyper_cfg.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn_cfg\driver\r_xspi_qspi_cfg.h</name>
@@ -2380,7 +2387,25 @@
                 <name>$PROJ_DIR$\rzn\board\custom\board.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn\board\custom\board_ddr_param.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board_ethernet_phy.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board_init.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board_init.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board_leds.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\board\rzn2l_rsk\board_leds.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\mcu\all\bsp_address_expander.c</name>
@@ -2450,6 +2475,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\mcu\rzn2l\bsp_feature.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\fsp\src\bsp\mcu\rzn2l\bsp_feature.h.bak</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\mcu\all\bsp_io.c</name>
@@ -2682,6 +2710,9 @@
             <weakFile>
                 <name>$PROJ_DIR$\rzn\fsp\src\r_rsip_protected\src\rzt_rzn\private\lib\inc\r_error_codes.h</name>
             </weakFile>
+            <file>
+                <name>$PROJ_DIR$\rzn\fsp\inc\api\r_hyperbus_api.h</name>
+            </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\r_ioport\r_ioport.c</name>
             </file>
@@ -3625,7 +3656,16 @@
                 <name>$PROJ_DIR$\rzn\fsp\inc\api\r_uart_api.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn\fsp\src\r_xspi_hyper\r_xspi_hyper.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\fsp\inc\instances\r_xspi_hyper.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\r_xspi_qspi\r_xspi_qspi.c</name>
+                <excluded>
+                    <configuration>Debug</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\inc\instances\r_xspi_qspi.h</name>
@@ -3641,6 +3681,9 @@
             </weakFile>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c.bak</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\cr\startup_core.c</name>
@@ -3667,7 +3710,13 @@
                 <name>$PROJ_DIR$\rzn_gen\bsp_clock_cfg.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn_gen\bsp_clock_cfg.h.bak</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn_gen\common_data.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn_gen\common_data.c.bak</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn_gen\common_data.h</name>
@@ -3676,13 +3725,22 @@
                 <name>$PROJ_DIR$\rzn_gen\hal_data.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn_gen\hal_data.c.bak</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn_gen\hal_data.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn_gen\hal_data.h.bak</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn_gen\main.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn_gen\pin_data.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\rzn_gen\pin_data.c.bak</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn_gen\pin_data.c.original.bak</name>
@@ -3708,6 +3766,9 @@
             <file>
                 <name>$PROJ_DIR$\src\loader_table.h</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\src\fsp_mod\r_xspi_qspi.c</name>
+            </file>
             <weakFile>
                 <name>$PROJ_DIR$\src\secure_app_deploy.c</name>
             </weakFile>
@@ -3728,6 +3789,15 @@
             </weakFile>
             <weakFile>
                 <name>$PROJ_DIR$\src\secure_ssbl_config.h</name>
+            </weakFile>
+            <weakFile>
+                <name>$PROJ_DIR$\src\sio_char.h</name>
+            </weakFile>
+            <weakFile>
+                <name>$PROJ_DIR$\src\siochar.c</name>
+            </weakFile>
+            <weakFile>
+                <name>$PROJ_DIR$\src\siorw.c</name>
             </weakFile>
         </group>
     </group>

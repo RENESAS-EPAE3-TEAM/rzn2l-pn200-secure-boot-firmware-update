@@ -74,8 +74,15 @@
             <path>rzn/arm/CMSIS_6/LICENSE</path>
             <path>rzn/board/custom/board.h</path>
             <path>rzn/board/custom/board_ddr_param.h</path>
+            <path>rzn/board/rzn2l_rsk/board.h</path>
+            <path>rzn/board/rzn2l_rsk/board_ethernet_phy.h</path>
+            <path>rzn/board/rzn2l_rsk/board_init.c</path>
+            <path>rzn/board/rzn2l_rsk/board_init.h</path>
+            <path>rzn/board/rzn2l_rsk/board_leds.c</path>
+            <path>rzn/board/rzn2l_rsk/board_leds.h</path>
             <path>rzn/fsp/inc/api/bsp_api.h</path>
             <path>rzn/fsp/inc/api/fsp_common_api.h</path>
+            <path>rzn/fsp/inc/api/r_hyperbus_api.h</path>
             <path>rzn/fsp/inc/api/r_ioport_api.h</path>
             <path>rzn/fsp/inc/api/r_rsip_api.h</path>
             <path>rzn/fsp/inc/api/r_spi_flash_api.h</path>
@@ -86,6 +93,7 @@
             <path>rzn/fsp/inc/instances/r_ioport.h</path>
             <path>rzn/fsp/inc/instances/r_rsip.h</path>
             <path>rzn/fsp/inc/instances/r_sci_uart.h</path>
+            <path>rzn/fsp/inc/instances/r_xspi_hyper.h</path>
             <path>rzn/fsp/inc/instances/r_xspi_qspi.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/cmsis_compiler_rz.h</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Include/cr/cmsis_cp15.h</path>
@@ -100,6 +108,7 @@
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/cr/startup_core.c.bak</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/cr/system_core.c</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/startup.c</path>
+            <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/startup.c.bak</path>
             <path>rzn/fsp/src/bsp/cmsis/Device/RENESAS/Source/system.c</path>
             <path>rzn/fsp/src/bsp/mcu/all/bsp_address_expander.c</path>
             <path>rzn/fsp/src/bsp/mcu/all/bsp_address_expander.h</path>
@@ -145,6 +154,7 @@
             <path>rzn/fsp/src/bsp/mcu/all/cr/bsp_mpu_core.h</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_elc.h</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_feature.h</path>
+            <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_feature.h.bak</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_irq_sense.c</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_loader_param.c</path>
             <path>rzn/fsp/src/bsp/mcu/rzn2l/bsp_mcu_info.h</path>
@@ -462,6 +472,7 @@
             <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/private/r_rsip_wrapper.h</path>
             <path>rzn/fsp/src/r_rsip_protected/src/rzt_rzn/public/r_rsip_rzt_rzn.c</path>
             <path>rzn/fsp/src/r_sci_uart/r_sci_uart.c</path>
+            <path>rzn/fsp/src/r_xspi_hyper/r_xspi_hyper.c</path>
             <path>rzn/fsp/src/r_xspi_qspi/r_xspi_qspi.c</path>
         </group>
         <group name="Build Configuration">
@@ -474,18 +485,25 @@
             <path>rzn_cfg/fsp_cfg/bsp/bsp_mcu_family_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/bsp/bsp_memory_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/bsp/bsp_pin_cfg.h</path>
+            <path>rzn_cfg/fsp_cfg/bsp/bsp_pin_cfg.h.bak</path>
             <path>rzn_cfg/fsp_cfg/r_ioport_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/r_rsip_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/r_sci_uart_cfg.h</path>
+            <path>rzn_cfg/fsp_cfg/r_xspi_hyper_cfg.h</path>
         </group>
         <group name="Generated Data">
             <path>rzn_gen/bsp_clock_cfg.h</path>
+            <path>rzn_gen/bsp_clock_cfg.h.bak</path>
             <path>rzn_gen/common_data.c</path>
+            <path>rzn_gen/common_data.c.bak</path>
             <path>rzn_gen/common_data.h</path>
             <path>rzn_gen/hal_data.c</path>
+            <path>rzn_gen/hal_data.c.bak</path>
             <path>rzn_gen/hal_data.h</path>
+            <path>rzn_gen/hal_data.h.bak</path>
             <path>rzn_gen/main.c</path>
             <path>rzn_gen/pin_data.c</path>
+            <path>rzn_gen/pin_data.c.bak</path>
             <path>rzn_gen/pin_data.c.original.bak</path>
             <path>rzn_gen/vector_data.c</path>
             <path>rzn_gen/vector_data.h</path>
@@ -493,6 +511,7 @@
         <group name="Program Entry">
             <path>src/app_manifest_abi.h</path>
             <path>src/hal_entry.c</path>
+            <path>src/fsp_mod/r_xspi_qspi.c</path>
             <path>src/loader_table.c</path>
             <path>src/loader_table.h</path>
             <path>src/secure_app_deploy.c</path>
@@ -502,6 +521,9 @@
             <path>src/secure_app_verify.c</path>
             <path>src/secure_app_verify.h</path>
             <path>src/secure_ssbl_config.h</path>
+            <path>src/siochar.c</path>
+            <path>src/siorw.c</path>
+            <path>src/sio_char.h</path>
         </group>
     </files>
 </iarProjectConnection>

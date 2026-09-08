@@ -1,4 +1,3 @@
-/* This is a placeholder file that will never be extracted. */
 /*
 * Copyright (c) 2020 - 2025 Renesas Electronics Corporation and/or its affiliates
 *
@@ -6,31 +5,22 @@
 */
 
 /***********************************************************************************************************************
- * File Name    : board.h
- * Description  : Includes and API function available for this board.
+ * File Name    : board_init.h
+ * Description  : This module calls any initialization code specific to this BSP.
  **********************************************************************************************************************/
 
 /*******************************************************************************************************************//**
- * @ingroup BOARDS
- * @defgroup BOARD_RZN2L_RSK
- * @brief BSP for the RZN2L_RSK Board
+ * @ingroup BOARD_RZN2L_RSK
+ * @defgroup BOARD_RZN2L_RSK_INIT
+ * @brief Board specific code for the RZN2L_RSK Board
  *
- * The RZN2L_RSK is a development kit for the Renesas RZN2L microcontroller.
+ * This include file is specific to the RZN2L_RSK board.
  *
  * @{
  **********************************************************************************************************************/
 
-#ifndef BOARD_H
-#define BOARD_H
-
-/***********************************************************************************************************************
- * Includes   <System Includes> , "Project Includes"
- **********************************************************************************************************************/
-
-/* BSP Board Specific Includes. */
-#include "board_init.h"
-#include "board_leds.h"
-#include "board_ethernet_phy.h"
+#ifndef BOARD_INIT_H
+#define BOARD_INIT_H
 
 /** Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */
 FSP_HEADER
@@ -38,7 +28,6 @@ FSP_HEADER
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
-#define BOARD_RZN2L_RSK
 
 /***********************************************************************************************************************
  * Typedef definitions
@@ -51,10 +40,11 @@ FSP_HEADER
 /***********************************************************************************************************************
  * Exported global functions (to be accessed by other files)
  **********************************************************************************************************************/
-
-/** @} (end defgroup BSP_CONFIG_RZN2L) */
+void bsp_init(void * p_args);
 
 /** Common macro for FSP header files. There is also a corresponding FSP_HEADER macro at the top of this file. */
 FSP_FOOTER
 
 #endif
+
+/** @} (end defgroup BOARD_RZN2L_RSK_INIT) */

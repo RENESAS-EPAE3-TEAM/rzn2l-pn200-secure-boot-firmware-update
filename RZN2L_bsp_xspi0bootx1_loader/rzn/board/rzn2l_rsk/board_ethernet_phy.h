@@ -1,36 +1,21 @@
-/* This is a placeholder file that will never be extracted. */
 /*
 * Copyright (c) 2020 - 2025 Renesas Electronics Corporation and/or its affiliates
 *
 * SPDX-License-Identifier: BSD-3-Clause
 */
 
-/***********************************************************************************************************************
- * File Name    : board.h
- * Description  : Includes and API function available for this board.
- **********************************************************************************************************************/
-
 /*******************************************************************************************************************//**
- * @ingroup BOARDS
- * @defgroup BOARD_RZN2L_RSK
- * @brief BSP for the RZN2L_RSK Board
+ * @ingroup BOARD_RZN2_RSK
+ * @defgroup BOARD_RZN2_RSK_ETHERNET_PHY Board Ethernet Phy
+ * @brief Ethernet Phy information for this board.
  *
- * The RZN2L_RSK is a development kit for the Renesas RZN2L microcontroller.
+ * This is code specific to the RZN2_RSK board.
  *
  * @{
  **********************************************************************************************************************/
 
-#ifndef BOARD_H
-#define BOARD_H
-
-/***********************************************************************************************************************
- * Includes   <System Includes> , "Project Includes"
- **********************************************************************************************************************/
-
-/* BSP Board Specific Includes. */
-#include "board_init.h"
-#include "board_leds.h"
-#include "board_ethernet_phy.h"
+#ifndef BSP_ETHERNET_PHY_H
+#define BSP_ETHERNET_PHY_H
 
 /** Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */
 FSP_HEADER
@@ -38,7 +23,8 @@ FSP_HEADER
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
-#define BOARD_RZN2L_RSK
+#define ETHER_PHY_CFG_TARGET_VSC8541_ENABLE    (1)
+#define ETHER_PHY_LSI_TYPE_KIT_COMPONENT       ETHER_PHY_LSI_TYPE_VSC8541
 
 /***********************************************************************************************************************
  * Typedef definitions
@@ -49,12 +35,12 @@ FSP_HEADER
  **********************************************************************************************************************/
 
 /***********************************************************************************************************************
- * Exported global functions (to be accessed by other files)
+ * Public Functions
  **********************************************************************************************************************/
-
-/** @} (end defgroup BSP_CONFIG_RZN2L) */
 
 /** Common macro for FSP header files. There is also a corresponding FSP_HEADER macro at the top of this file. */
 FSP_FOOTER
 
 #endif
+
+/** @} (end defgroup BOARD_RZN2_RSK_ETHERNET_PHY) */

@@ -1,4 +1,3 @@
-/* This is a placeholder file that will never be extracted. */
 /*
 * Copyright (c) 2020 - 2025 Renesas Electronics Corporation and/or its affiliates
 *
@@ -6,55 +5,59 @@
 */
 
 /***********************************************************************************************************************
- * File Name    : board.h
- * Description  : Includes and API function available for this board.
+ * File Name    : board_leds.c
+ * Description  : This module has information about the LEDs on this board.
  **********************************************************************************************************************/
 
 /*******************************************************************************************************************//**
- * @ingroup BOARDS
- * @defgroup BOARD_RZN2L_RSK
- * @brief BSP for the RZN2L_RSK Board
- *
- * The RZN2L_RSK is a development kit for the Renesas RZN2L microcontroller.
+ * @addtogroup BOARD_RZN2L_RSK_LEDS
  *
  * @{
  **********************************************************************************************************************/
 
-#ifndef BOARD_H
-#define BOARD_H
-
 /***********************************************************************************************************************
- * Includes   <System Includes> , "Project Includes"
+ * Includes
  **********************************************************************************************************************/
-
-/* BSP Board Specific Includes. */
-#include "board_init.h"
-#include "board_leds.h"
-#include "board_ethernet_phy.h"
-
-/** Common macro for FSP header files. There is also a corresponding FSP_FOOTER macro at the end of this file. */
-FSP_HEADER
+#include "bsp_api.h"
+#if defined(BOARD_RZN2L_RSK)
 
 /***********************************************************************************************************************
  * Macro definitions
  **********************************************************************************************************************/
-#define BOARD_RZN2L_RSK
 
 /***********************************************************************************************************************
  * Typedef definitions
  **********************************************************************************************************************/
 
 /***********************************************************************************************************************
- * Exported global variables
+ * Private global variables and functions
  **********************************************************************************************************************/
+
+/** Array of LED IOPORT pins. */
+static const uint32_t g_bsp_prv_leds[][2] =
+{
+    {(uint32_t) BSP_IO_PORT_18_PIN_2, (uint32_t) BSP_IO_REGION_SAFE}, ///< RLED0
+    {(uint32_t) BSP_IO_PORT_22_PIN_3, (uint32_t) BSP_IO_REGION_SAFE}, ///< RLED1
+    {(uint32_t) BSP_IO_PORT_04_PIN_1, (uint32_t) BSP_IO_REGION_SAFE}, ///< RLED2
+    {(uint32_t) BSP_IO_PORT_17_PIN_3, (uint32_t) BSP_IO_REGION_SAFE}  ///< RLED3
+};
 
 /***********************************************************************************************************************
- * Exported global functions (to be accessed by other files)
+ * Exported global variables (to be accessed by other files)
  **********************************************************************************************************************/
 
-/** @} (end defgroup BSP_CONFIG_RZN2L) */
+/** Structure with LED information for this board. */
 
-/** Common macro for FSP header files. There is also a corresponding FSP_HEADER macro at the top of this file. */
-FSP_FOOTER
+const bsp_leds_t g_bsp_leds =
+{
+    .led_count = (uint16_t) (sizeof(g_bsp_prv_leds) / sizeof(g_bsp_prv_leds[0])),
+    .p_leds    = g_bsp_prv_leds
+};
+
+/***********************************************************************************************************************
+ * Exported global variables (to be accessed by other files)
+ **********************************************************************************************************************/
 
 #endif
+
+/** @} (end addtogroup BOARD_RZN2L_RSK_LEDS) */

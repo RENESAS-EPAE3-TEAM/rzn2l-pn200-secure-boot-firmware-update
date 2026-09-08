@@ -1140,22 +1140,22 @@ FSP Configuration
       P13_7 M11 - SW3_Pin4 - - Disabled - - "ETHER_ESC: ESC_LATCH0; ETHER_ESC: ESC_LATCH1; ETHER_GMAC: GMAC_PTPTRG1; MBXSEM: MBX_HINT#; MTU3: MTCLKC; XSPI0: XSPI0_ECS1#" - IO - - 
       P14_0 L13 - SW3_Pin3 - - Disabled - - "ETHER_ESC: ESC_SYNC0; ETHER_ESC: ESC_SYNC1; ETHER_ETHSW: ETHSW_PTPOUT1; MTU3: MTCLKD; XSPI0: XSPI0_INT0#" - IO - - 
       P14_1 L14 - - - - Disabled - - "ETHER_ESC: ESC_LATCH0; ETHER_ESC: ESC_LATCH1; ETHER_ETH1: ETH1_COL; ETHER_GMAC: GMAC_PTPTRG1; GPT8: GTIOC8A; MTU38: MTIOC8A; SHOSTIF: HSPI_IO0; XSPI0: XSPI0_INT1#" - None - - 
-      P14_2 K12 - XSPI0_ECS Low - Disabled - - "ETHER_ETH0: ETH0_CRS; ETHER_ETH2: ETH2_CRS; GPT8: GTIOC8B; IRQ: IRQ6; MTU38: MTIOC8B; SHOSTIF: HSPI_CK; XSPI0: XSPI0_ECS0#" - I - - 
+      P14_2 K12 XSPI0_XSPI0_ECS0# XSPI0_ECS Low - "Peripheral mode" - - "ETHER_ETH0: ETH0_CRS; ETHER_ETH2: ETH2_CRS; GPT8: GTIOC8B; IRQ: IRQ6; MTU38: MTIOC8B; SHOSTIF: HSPI_CK; XSPI0: XSPI0_ECS0#" - I - - 
       P14_3 M14 - - - - Disabled - - "ETHER_ETH0: ETH0_COL; ETHER_ETH2: ETH2_COL; MTU30: MTIOC0A; SHOSTIF: HSPI_IO1; XSPI0: XSPI0_RSTO1#" - None - - 
-      P14_4 J13 - XSPI0_DS Low - Disabled - - "BSC: BS#; ETHER_ESC: ESC_IRQ; MTU30: MTIOC0B; PHOSTIF: HBS#; XSPI0: XSPI0_DS" - IO - - 
-      P14_5 J12 - XSPI0_CKN Low - Disabled - - "BSC: CS3#; MTU_POE3: POE8#; SHOSTIF: HSPI_INT#; XSPI0: XSPI0_CKN" - O - - 
-      P14_6 K13 - XSPI0_CKP Low - Disabled - - "BSC: A21; XSPI0: XSPI0_CKP" - O - - 
-      P14_7 M15 - XSPI0_IO0 Low - Disabled - - "BSC: A22; BSC: BS#; SCI5: SCK5; SPI1: SPI_MISO1; XSPI0: XSPI0_IO0" - IO - - 
-      P15_0 L11 - XSPI0_IO1 Low - Disabled - - "BSC: A23; BSC: CKE; SCI5: RXD_MISO5; SCI5: SCL5; SPI1: SPI_MOSI1; XSPI0: XSPI0_IO1" - IO - - 
-      P15_1 K14 - XSPI0_IO2 Low - Disabled - - "BSC: A24; BSC: CAS#; MTU30: MTIOC0C; SCI5: SDA5; SCI5: TXD_MOSI5; SPI1: SPI_SSL10; XSPI0: XSPI0_IO2" - IO - - 
-      P15_2 K15 - XSPI0_IO3 Low - Disabled - - "BSC: A25; BSC: RAS#; MTU30: MTIOC0D; SCI5: CTS_RTS_SS5#; SPI1: SPI_SSL11; XSPI0: XSPI0_IO3" - IO - - 
-      P15_3 K11 - XSPI0_IO4 - - Disabled - - "BSC: D11; DSMIF1: MCLK1; MTU38: MTIOC8C; XSPI0: XSPI0_IO4" - None - - 
-      P15_4 H13 - XSPI0_IO5 - - Disabled - - "BSC: D12; DSMIF1: MDAT1; MTU38: MTIOC8D; XSPI0: XSPI0_IO5" - None - - 
-      P15_5 J14 - XSPI0_IO6 - - Disabled - - "BSC: D13; DSMIF2: MCLK2; XSPI0: XSPI0_IO6" - None - - 
-      P15_6 H12 - XSPI0_IO7 - - Disabled - - "BSC: D14; DSMIF2: MDAT2; SPI1: SPI_SSL12; XSPI0: XSPI0_IO7" - None - - 
-      P15_7 J15 - OSPI_CS Low - Disabled - - "DMAC: TEND; SCI5: CTS5#; SPI1: SPI_SSL13; XSPI0: XSPI0_CS0#" - O - - 
-      P16_0 G13 - ORAM_CS0 Low - Disabled - - "DSMIF3: MCLK3; ETHER_ETH0: ETH0_TXER; ETHER_ETH2: ETH2_REFCLK; SCI0: SDA0; SCI0: TXD_MOSI0; SHOSTIF: HSPI_CS#; SPI3: SPI_MOSI3; XSPI0: XSPI0_CS1#" - O - - 
-      P16_1 H11 - XSPI0_RESET0 Low - Disabled - - "ADC0: ADTRG0#; BSC: CS2#; CMTW0: CMTW0_TOC1; DSMIF3: MDAT3; PHOSTIF: HCS1#; SCI0: RXD_MISO0; SCI0: SCL0; SPI3: SPI_MISO3; XSPI0: XSPI0_RESET0#" - O - - 
+      P14_4 J13 XSPI0_XSPI0_DS XSPI0_DS High - "Peripheral mode" - - "BSC: BS#; ETHER_ESC: ESC_IRQ; MTU30: MTIOC0B; PHOSTIF: HBS#; XSPI0: XSPI0_DS" - IO - - 
+      P14_5 J12 XSPI0_XSPI0_CKN XSPI0_CKN High - "Peripheral mode" - - "BSC: CS3#; MTU_POE3: POE8#; SHOSTIF: HSPI_INT#; XSPI0: XSPI0_CKN" - O - - 
+      P14_6 K13 XSPI0_XSPI0_CKP XSPI0_CKP High - "Peripheral mode" - - "BSC: A21; XSPI0: XSPI0_CKP" - O - - 
+      P14_7 M15 XSPI0_XSPI0_IO0 XSPI0_IO0 High - "Peripheral mode" - - "BSC: A22; BSC: BS#; SCI5: SCK5; SPI1: SPI_MISO1; XSPI0: XSPI0_IO0" - IO - - 
+      P15_0 L11 XSPI0_XSPI0_IO1 XSPI0_IO1 High - "Peripheral mode" - - "BSC: A23; BSC: CKE; SCI5: RXD_MISO5; SCI5: SCL5; SPI1: SPI_MOSI1; XSPI0: XSPI0_IO1" - IO - - 
+      P15_1 K14 XSPI0_XSPI0_IO2 XSPI0_IO2 High - "Peripheral mode" - - "BSC: A24; BSC: CAS#; MTU30: MTIOC0C; SCI5: SDA5; SCI5: TXD_MOSI5; SPI1: SPI_SSL10; XSPI0: XSPI0_IO2" - IO - - 
+      P15_2 K15 XSPI0_XSPI0_IO3 XSPI0_IO3 High - "Peripheral mode" - - "BSC: A25; BSC: RAS#; MTU30: MTIOC0D; SCI5: CTS_RTS_SS5#; SPI1: SPI_SSL11; XSPI0: XSPI0_IO3" - IO - - 
+      P15_3 K11 XSPI0_XSPI0_IO4 XSPI0_IO4 - - "Peripheral mode" - - "BSC: D11; DSMIF1: MCLK1; MTU38: MTIOC8C; XSPI0: XSPI0_IO4" - None - - 
+      P15_4 H13 XSPI0_XSPI0_IO5 XSPI0_IO5 - - "Peripheral mode" - - "BSC: D12; DSMIF1: MDAT1; MTU38: MTIOC8D; XSPI0: XSPI0_IO5" - None - - 
+      P15_5 J14 XSPI0_XSPI0_IO6 XSPI0_IO6 - - "Peripheral mode" - - "BSC: D13; DSMIF2: MCLK2; XSPI0: XSPI0_IO6" - None - - 
+      P15_6 H12 XSPI0_XSPI0_IO7 XSPI0_IO7 - - "Peripheral mode" - - "BSC: D14; DSMIF2: MDAT2; SPI1: SPI_SSL12; XSPI0: XSPI0_IO7" - None - - 
+      P15_7 J15 XSPI0_XSPI0_CS0# OSPI_CS High - "Peripheral mode" - - "DMAC: TEND; SCI5: CTS5#; SPI1: SPI_SSL13; XSPI0: XSPI0_CS0#" - O - - 
+      P16_0 G13 XSPI0_XSPI0_CS1# ORAM_CS0 High - "Peripheral mode" - - "DSMIF3: MCLK3; ETHER_ETH0: ETH0_TXER; ETHER_ETH2: ETH2_REFCLK; SCI0: SDA0; SCI0: TXD_MOSI0; SHOSTIF: HSPI_CS#; SPI3: SPI_MOSI3; XSPI0: XSPI0_CS1#" - O - - 
+      P16_1 H11 XSPI0_XSPI0_RESET0# XSPI0_RESET0 Low - "Peripheral mode" - - "ADC0: ADTRG0#; BSC: CS2#; CMTW0: CMTW0_TOC1; DSMIF3: MDAT3; PHOSTIF: HCS1#; SCI0: RXD_MISO0; SCI0: SCL0; SPI3: SPI_MISO3; XSPI0: XSPI0_RESET0#" - O - - 
       P16_2 H14 - - - - Disabled - - "IRQ: NMI; PHOSTIF: HERROUT#; SCI0: CTS0#; SHOSTIF: HSPI_IO2; SPI3: SPI_RSPCK3; USB_HS: USB_EXICEN; XSPI0: XSPI0_RESET1#" - None - - 
       P16_3 G12 - SW1 - - Disabled - - "BSC: CS3#; ETHER_ETH1: ETH1_CRS; ETHER_ETH1: ETH1_TXER; GPT: GTADSMP1; IRQ: IRQ7; SCI0: SCK0; SHOSTIF: HSPI_IO3; SPI3: SPI_SSL30; XSPI0: XSPI0_RSTO0#" - IO - - 
       P16_5 H15 - UART_USB_TX Low - Disabled - - "BSC: A15; MTU35: MTIC5U; SCI0: SDA0; SCI0: TXD_MOSI0; SHOSTIF: HSPI_IO4" - IO - - 
@@ -1568,6 +1568,22 @@ FSP Configuration
     Flow Control Support: Disable
     Multiplex Interrupt: Disabled
     
+  Module "HyperRAM (r_xspi_hyper)"
+    Parameter Checking: Default (BSP)
+    Unit 0 Prefetch Function: Disable
+    Unit 1 Prefetch Function: Disable
+    Unit 0 IO voltage: Not Supported
+    Unit 1 IO voltage: Not Supported
+    Memory Mapping Address Space: Unit 0: Chip Select 0: Start Address: 0x40000000
+    Memory Mapping Address Space: Unit 0: Chip Select 0: End Address: 0x400FFFFF
+    Memory Mapping Address Space: Unit 0: Chip Select 1: Start Address: 0x48000000
+    Memory Mapping Address Space: Unit 0: Chip Select 1: End Address: 0x480FFFFF
+    Memory Mapping Address Space: Unit 1: Chip Select 0: Start Address: 0x50000000
+    Memory Mapping Address Space: Unit 1: Chip Select 0: End Address: 0x500FFFFF
+    Memory Mapping Address Space: Unit 1: Chip Select 1: Start Address: 0x58000000
+    Memory Mapping Address Space: Unit 1: Chip Select 1: End Address: 0x580FFFFF
+    Memory Mapping Address Space: Memory Mapping Address Space Configuration Support: Not Supported
+    
   HAL
     Instance "g_ioport I/O Port (r_ioport)"
       General: Name: g_ioport
@@ -1685,4 +1701,20 @@ FSP Configuration
       Interrupts: Transmit Data Empty Interrupt Priority: Priority 12
       Interrupts: Transmit End Interrupt Priority: Priority 12
       Interrupts: Error Interrupt Priority: Priority 12
+      
+    Instance "g_hyperbus0 HyperRAM (r_xspi_hyper)"
+      General: Name: g_hyperbus0
+      General: Unit: 0
+      General: Chip Select: Chip Select 1
+      General: RAM Size: 8MB
+      General: Initial latency (Read): 6 CYCLES
+      General: Initial latency (Memory Write): 6 CYCLES
+      General: Initial latency (Register Write): 0 CYCLE (No Latency)
+      HyperBus Transaction Characteristics: Initial Burst Type: Linear burst (Burst type = 1)
+      HyperBus Transaction Characteristics: Initial Access Space: Memory Space (AS = 0)
+      Auto Calibration: Data latching delay: 0x08
+      Auto Calibration: Auto-Calibration Address: 0x00
+      Bus Timing: CS minimum idle term: 7 CYCLES
+      Bus Timing: CS Asserting extension: No Extension
+      Bus Timing: CS Negating extension: No Extension
       

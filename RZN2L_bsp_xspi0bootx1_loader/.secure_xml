@@ -10,7 +10,7 @@
     <option key="#RTOS#" value="_none"/>
     <option key="#pinconfiguration#" value="R9A07G084M04GBG.pincfg"/>
     <option key="#FSPVersion#" value="3.0.0"/>
-    <option key="#ConfigurationFragments#" value="Renesas##BSP##Board##rzn2l_rsk##xspi0_x1_boot"/>
+    <option key="#ConfigurationFragments#" value="Renesas##BSP##Board##rzn2l_rsk##xspi0_x1_boot|Renesas##BSP##Board##rzn2l_rsk##ram_execution"/>
     <option key="#SELECTED_TOOLCHAIN#" value="iar.arm.toolchain"/>
   </generalSettings>
   <raBspConfiguration/>
@@ -162,10 +162,10 @@
       <configSetting altId="xspi0.xspi0_io1.p15_0" configurationId="xspi0.xspi0_io1" isUsedByDriver="true" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io2.p15_1" configurationId="xspi0.xspi0_io2" isUsedByDriver="true" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_io3.p15_2" configurationId="xspi0.xspi0_io3" isUsedByDriver="true" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io4.p15_3" configurationId="xspi0.xspi0_io4" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io5.p15_4" configurationId="xspi0.xspi0_io5" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io6.p15_5" configurationId="xspi0.xspi0_io6" peripheral="XSPI0"/>
-      <configSetting altId="xspi0.xspi0_io7.p15_6" configurationId="xspi0.xspi0_io7" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io4.p15_3" configurationId="xspi0.xspi0_io4" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io5.p15_4" configurationId="xspi0.xspi0_io5" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io6.p15_5" configurationId="xspi0.xspi0_io6" isUsedByDriver="true" peripheral="XSPI0"/>
+      <configSetting altId="xspi0.xspi0_io7.p15_6" configurationId="xspi0.xspi0_io7" isUsedByDriver="true" peripheral="XSPI0"/>
       <configSetting altId="xspi0.xspi0_reset0_hash.p16_1" configurationId="xspi0.xspi0_reset0_hash" isUsedByDriver="true" peripheral="XSPI0"/>
     </pincfg>
   </raPinConfiguration>

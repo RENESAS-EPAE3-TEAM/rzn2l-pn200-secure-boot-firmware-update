@@ -10,7 +10,7 @@
     <option key="#RTOS#" value="_none"/>
     <option key="#pinconfiguration#" value="R9A07G084M04GBG.pincfg"/>
     <option key="#FSPVersion#" value="3.0.0"/>
-    <option key="#ConfigurationFragments#" value="Renesas##BSP##Board##rzn2l_rsk##xspi0_x1_boot"/>
+    <option key="#ConfigurationFragments#" value="Renesas##BSP##Board##rzn2l_rsk##xspi0_x1_boot|Renesas##BSP##Board##rzn2l_rsk##ram_execution"/>
     <option key="#SELECTED_TOOLCHAIN#" value="iar.arm.toolchain"/>
   </generalSettings>
   <raBspConfiguration>
@@ -675,6 +675,10 @@
       <description>RZN Custom Board Support Files (RAM execution without flash memory)</description>
       <originalPack>Renesas.RZN_board_custom.3.0.0.pack</originalPack>
     </component>
+    <component apiversion="" class="HAL Drivers" condition="" group="all" subgroup="r_xspi_hyper" variant="" vendor="Renesas" version="3.0.0">
+      <description>HyperBus Interface on Expanded Serial Peripheral Interface</description>
+      <originalPack>Renesas.RZN.3.0.0.pack</originalPack>
+    </component>
   </raComponentSelection>
   <raElcConfiguration/>
   <raIcuConfiguration/>
@@ -796,6 +800,22 @@
       <property id="module.driver.uart.tei_ipl" value="board.icu.common.irq.priority12"/>
       <property id="module.driver.uart.eri_ipl" value="board.icu.common.irq.priority12"/>
     </module>
+    <module id="module.driver.hyper_ram_on_xspi_hyper.827240315">
+      <property id="module.driver.xspi_hyper.name" value="g_hyperbus0"/>
+      <property id="module.driver.xspi_hyper.unit" value="0"/>
+      <property id="module.driver.xspi_hyper.chip_select" value="module.driver.xspi_hyper.chip_select.cs1"/>
+      <property id="module.driver.xspi_hyper.ram_size" value="module.driver.xspi.memory_size.memory_size_8mb"/>
+      <property id="module.driver.xspi_hyper.read_latency_count" value="module.driver.xspi_hyper.read_latency_count.6_cycles"/>
+      <property id="module.driver.xspi_hyper.memory_write_latency_count" value="module.driver.xspi_hyper.memory_write_latency_count.6_cycles"/>
+      <property id="module.driver.xspi_hyper.register_write_latency_count" value="module.driver.xspi_hyper.register_write_latency_count.0_cycle"/>
+      <property id="module.driver.xspi_hyper.burst_type" value="module.driver.xspi_hyper.burst_type.linear_burst"/>
+      <property id="module.driver.xspi_hyper.access_space" value="module.driver.xspi_hyper.access_space.access_memory"/>
+      <property id="module.driver.xspi_hyper.data_latching_delay_clock" value="0x08"/>
+      <property id="module.driver.xspi_hyper.p_autocalibration_preamble_pattern_addr" value="0x00"/>
+      <property id="module.driver.xspi_hyper.transaction_interval" value="module.driver.xspi_hyper.transaction_interval.7_cycles"/>
+      <property id="module.driver.xspi_hyper.pull_up_timing" value="module.driver.xspi_hyper.pull_up_timing.no_extension"/>
+      <property id="module.driver.xspi_hyper.pull_down_timing" value="module.driver.xspi_hyper.pull_down_timing.no_extension"/>
+    </module>
     <context id="_hal.0">
       <stack module="module.driver.ioport_on_ioport.0"/>
       <stack module="module.bsp.memory_config.0"/>
@@ -804,6 +824,7 @@
         <stack module="module.driver.rsip_protected.engine.rzn2l.1033878842" requires="module.driver.rsip_protected.requires.rsip_protected.engine"/>
       </stack>
       <stack module="module.driver.uart_on_sci_uart.755903769"/>
+      <stack module="module.driver.hyper_ram_on_xspi_hyper.827240315"/>
     </context>
     <config id="config.driver.ioport">
       <property id="config.driver.ioport.checking" value="config.driver.ioport.checking.system"/>
@@ -875,6 +896,22 @@
       <property id="config.driver.rsip_protected.kdf.hmac.sha256" value="config.driver.rsip_protected.kdf.hmac.sha256.disabled"/>
       <property id="config.driver.rsip_protected.kdf.hmac.sha384" value="config.driver.rsip_protected.kdf.hmac.sha384.disabled"/>
       <property id="config.driver.rsip_protected.kdf.hmac.sha512" value="config.driver.rsip_protected.kdf.hmac.sha512.disabled"/>
+    </config>
+    <config id="config.driver.xspi_hyper">
+      <property id="config.driver.xspi_hyper.param_checking_enable" value="config.driver.xspi_hyper.param_checking_enable.bsp"/>
+      <property id="config.driver.xspi_hyper.unit0_prefetch_function" value="config.driver.xspi_hyper.unit0_prefetch_function.disabled"/>
+      <property id="config.driver.xspi_hyper.unit1_prefetch_function" value="config.driver.xspi_hyper.unit1_prefetch_function.disabled"/>
+      <property id="config.driver.xspi_hyper.unit0_io_voltage" value="enum.driver.xspi.iovoltage.not_supported"/>
+      <property id="config.driver.xspi_hyper.unit1_io_voltage" value="enum.driver.xspi.iovoltage.not_supported"/>
+      <property id="config.driver.xspi_hyper.unit0.cs0.start_address" value="0x40000000"/>
+      <property id="config.driver.xspi_hyper.unit0.cs0.end_address" value="0x400FFFFF"/>
+      <property id="config.driver.xspi_hyper.unit0.cs1.start_address" value="0x48000000"/>
+      <property id="config.driver.xspi_hyper.unit0.cs1.end_address" value="0x480FFFFF"/>
+      <property id="config.driver.xspi_hyper.unit1.cs0.start_address" value="0x50000000"/>
+      <property id="config.driver.xspi_hyper.unit1.cs0.end_address" value="0x500FFFFF"/>
+      <property id="config.driver.xspi_hyper.unit1.cs1.start_address" value="0x58000000"/>
+      <property id="config.driver.xspi_hyper.unit1.cs1.end_address" value="0x580FFFFF"/>
+      <property id="config.driver.xspi_hyper.address_space_configuration_support" value="config.driver.xspi.address_space_configuration_support.unsupported"/>
     </config>
   </raModuleConfiguration>
   <raPinConfiguration>
@@ -1390,6 +1427,78 @@
       <configSetting altId="p02_6.sr.sr.fast" configurationId="p02_6.sr"/>
       <configSetting altId="p02_7.jtag_fslash_swd.tck_swclk" configurationId="p02_7"/>
       <configSetting altId="p02_7.gpio_mode.gpio_mode_peripheral" configurationId="p02_7.gpio_mode"/>
+      <configSetting altId="p14_2.xspi0.xspi0_ecs0_hash" configurationId="p14_2"/>
+      <configSetting altId="p14_2.gpio_mode.gpio_mode_peripheral" configurationId="p14_2.gpio_mode"/>
+      <configSetting altId="p14_4.xspi0.xspi0_ds" configurationId="p14_4"/>
+      <configSetting altId="p14_4.gpio_speed.gpio_speed_high" configurationId="p14_4.gpio_drivecapacity"/>
+      <configSetting altId="p14_4.gpio_mode.gpio_mode_peripheral" configurationId="p14_4.gpio_mode"/>
+      <configSetting altId="p14_4.sr.sr.fast" configurationId="p14_4.sr"/>
+      <configSetting altId="p14_5.xspi0.xspi0_ckn" configurationId="p14_5"/>
+      <configSetting altId="p14_5.gpio_speed.gpio_speed_high" configurationId="p14_5.gpio_drivecapacity"/>
+      <configSetting altId="p14_5.gpio_mode.gpio_mode_peripheral" configurationId="p14_5.gpio_mode"/>
+      <configSetting altId="p14_5.sr.sr.fast" configurationId="p14_5.sr"/>
+      <configSetting altId="p14_6.xspi0.xspi0_ckp" configurationId="p14_6"/>
+      <configSetting altId="p14_6.gpio_speed.gpio_speed_high" configurationId="p14_6.gpio_drivecapacity"/>
+      <configSetting altId="p14_6.gpio_mode.gpio_mode_peripheral" configurationId="p14_6.gpio_mode"/>
+      <configSetting altId="p14_6.sr.sr.fast" configurationId="p14_6.sr"/>
+      <configSetting altId="p14_7.xspi0.xspi0_io0" configurationId="p14_7"/>
+      <configSetting altId="p14_7.gpio_speed.gpio_speed_high" configurationId="p14_7.gpio_drivecapacity"/>
+      <configSetting altId="p14_7.gpio_mode.gpio_mode_peripheral" configurationId="p14_7.gpio_mode"/>
+      <configSetting altId="p14_7.sr.sr.fast" configurationId="p14_7.sr"/>
+      <configSetting altId="p15_0.xspi0.xspi0_io1" configurationId="p15_0"/>
+      <configSetting altId="p15_0.gpio_speed.gpio_speed_high" configurationId="p15_0.gpio_drivecapacity"/>
+      <configSetting altId="p15_0.gpio_mode.gpio_mode_peripheral" configurationId="p15_0.gpio_mode"/>
+      <configSetting altId="p15_0.sr.sr.fast" configurationId="p15_0.sr"/>
+      <configSetting altId="p15_1.xspi0.xspi0_io2" configurationId="p15_1"/>
+      <configSetting altId="p15_1.gpio_speed.gpio_speed_high" configurationId="p15_1.gpio_drivecapacity"/>
+      <configSetting altId="p15_1.gpio_mode.gpio_mode_peripheral" configurationId="p15_1.gpio_mode"/>
+      <configSetting altId="p15_1.sr.sr.fast" configurationId="p15_1.sr"/>
+      <configSetting altId="p15_2.xspi0.xspi0_io3" configurationId="p15_2"/>
+      <configSetting altId="p15_2.gpio_speed.gpio_speed_high" configurationId="p15_2.gpio_drivecapacity"/>
+      <configSetting altId="p15_2.gpio_mode.gpio_mode_peripheral" configurationId="p15_2.gpio_mode"/>
+      <configSetting altId="p15_2.sr.sr.fast" configurationId="p15_2.sr"/>
+      <configSetting altId="p15_3.xspi0.xspi0_io4" configurationId="p15_3"/>
+      <configSetting altId="p15_3.gpio_speed.gpio_speed_high" configurationId="p15_3.gpio_drivecapacity"/>
+      <configSetting altId="p15_3.gpio_mode.gpio_mode_peripheral" configurationId="p15_3.gpio_mode"/>
+      <configSetting altId="p15_3.sr.sr.fast" configurationId="p15_3.sr"/>
+      <configSetting altId="p15_4.xspi0.xspi0_io5" configurationId="p15_4"/>
+      <configSetting altId="p15_4.gpio_speed.gpio_speed_high" configurationId="p15_4.gpio_drivecapacity"/>
+      <configSetting altId="p15_4.gpio_mode.gpio_mode_peripheral" configurationId="p15_4.gpio_mode"/>
+      <configSetting altId="p15_4.sr.sr.fast" configurationId="p15_4.sr"/>
+      <configSetting altId="p15_5.xspi0.xspi0_io6" configurationId="p15_5"/>
+      <configSetting altId="p15_5.gpio_speed.gpio_speed_high" configurationId="p15_5.gpio_drivecapacity"/>
+      <configSetting altId="p15_5.gpio_mode.gpio_mode_peripheral" configurationId="p15_5.gpio_mode"/>
+      <configSetting altId="p15_5.sr.sr.fast" configurationId="p15_5.sr"/>
+      <configSetting altId="p15_6.xspi0.xspi0_io7" configurationId="p15_6"/>
+      <configSetting altId="p15_6.gpio_speed.gpio_speed_high" configurationId="p15_6.gpio_drivecapacity"/>
+      <configSetting altId="p15_6.gpio_mode.gpio_mode_peripheral" configurationId="p15_6.gpio_mode"/>
+      <configSetting altId="p15_6.sr.sr.fast" configurationId="p15_6.sr"/>
+      <configSetting altId="p15_7.xspi0.xspi0_cs0_hash" configurationId="p15_7"/>
+      <configSetting altId="p15_7.gpio_speed.gpio_speed_high" configurationId="p15_7.gpio_drivecapacity"/>
+      <configSetting altId="p15_7.gpio_mode.gpio_mode_peripheral" configurationId="p15_7.gpio_mode"/>
+      <configSetting altId="p15_7.sr.sr.fast" configurationId="p15_7.sr"/>
+      <configSetting altId="p16_0.xspi0.xspi0_cs1_hash" configurationId="p16_0"/>
+      <configSetting altId="p16_0.gpio_speed.gpio_speed_high" configurationId="p16_0.gpio_drivecapacity"/>
+      <configSetting altId="p16_0.gpio_mode.gpio_mode_peripheral" configurationId="p16_0.gpio_mode"/>
+      <configSetting altId="p16_0.sr.sr.fast" configurationId="p16_0.sr"/>
+      <configSetting altId="p16_1.xspi0.xspi0_reset0_hash" configurationId="p16_1"/>
+      <configSetting altId="p16_1.gpio_mode.gpio_mode_peripheral" configurationId="p16_1.gpio_mode"/>
+      <configSetting altId="xspi0.mode.octa_40_1.8v_41.free" configurationId="xspi0.mode"/>
+      <configSetting altId="xspi0.xspi0_ckn.p14_5" configurationId="xspi0.xspi0_ckn"/>
+      <configSetting altId="xspi0.xspi0_ckp.p14_6" configurationId="xspi0.xspi0_ckp"/>
+      <configSetting altId="xspi0.xspi0_cs0_hash.p15_7" configurationId="xspi0.xspi0_cs0_hash"/>
+      <configSetting altId="xspi0.xspi0_cs1_hash.p16_0" configurationId="xspi0.xspi0_cs1_hash"/>
+      <configSetting altId="xspi0.xspi0_ds.p14_4" configurationId="xspi0.xspi0_ds"/>
+      <configSetting altId="xspi0.xspi0_ecs0_hash.p14_2" configurationId="xspi0.xspi0_ecs0_hash"/>
+      <configSetting altId="xspi0.xspi0_io0.p14_7" configurationId="xspi0.xspi0_io0"/>
+      <configSetting altId="xspi0.xspi0_io1.p15_0" configurationId="xspi0.xspi0_io1"/>
+      <configSetting altId="xspi0.xspi0_io2.p15_1" configurationId="xspi0.xspi0_io2"/>
+      <configSetting altId="xspi0.xspi0_io3.p15_2" configurationId="xspi0.xspi0_io3"/>
+      <configSetting altId="xspi0.xspi0_io4.p15_3" configurationId="xspi0.xspi0_io4"/>
+      <configSetting altId="xspi0.xspi0_io5.p15_4" configurationId="xspi0.xspi0_io5"/>
+      <configSetting altId="xspi0.xspi0_io6.p15_5" configurationId="xspi0.xspi0_io6"/>
+      <configSetting altId="xspi0.xspi0_io7.p15_6" configurationId="xspi0.xspi0_io7"/>
+      <configSetting altId="xspi0.xspi0_reset0_hash.p16_1" configurationId="xspi0.xspi0_reset0_hash"/>
     </pincfg>
     <pincfg active="true" name="RSK+RZN2L_QSPI0" selected="true" symbol="g_bsp_pin_cfg_QSPI0">
       <configSetting altId="canfd0.canrx0.p01_7" configurationId="canfd0.canrx0"/>
