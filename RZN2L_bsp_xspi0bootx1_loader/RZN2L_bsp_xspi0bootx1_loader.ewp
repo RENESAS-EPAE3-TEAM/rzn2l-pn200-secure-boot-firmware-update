@@ -3681,6 +3681,9 @@
             </weakFile>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c</name>
+                <excluded>
+                    <configuration>Debug</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c.bak</name>
@@ -3799,6 +3802,9 @@
             <weakFile>
                 <name>$PROJ_DIR$\src\siorw.c</name>
             </weakFile>
+            <file>
+                <name>$PROJ_DIR$\src\fsp_mod\startup.c</name>
+            </file>
         </group>
     </group>
     <group>

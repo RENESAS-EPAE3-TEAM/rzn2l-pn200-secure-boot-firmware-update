@@ -274,6 +274,7 @@ typedef enum e_bsp_warm_start_event
     BSP_WARM_START_RESET = 0,          ///< Called almost immediately after reset. No C runtime environment, clocks, or IRQs.
     BSP_WARM_START_POST_CLOCK,         ///< Called after clock initialization. No C runtime environment or IRQs.
     BSP_WARM_START_POST_C,             ///< Called after clocks and C runtime environment have been set up
+    BSP_WARM_START_POST_LOADER,
 } bsp_warm_start_event_t;
 
 /* Private enum used in R_FSP_SystemClockHzGet. */

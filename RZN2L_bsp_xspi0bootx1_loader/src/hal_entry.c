@@ -205,8 +205,10 @@ void hal_entry(void)
       ssbl_print_manifest_summary(secure_app_manifest_ptr());
   #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
       ssbl_print_legacy_manifest_summary(secure_app_legacy_manifest_ptr());
-      
+  
+#if 0      
       //@@@@@@@@@@@@@@@@@@@@@@@@@@@ add for debug @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+      
     const app_manifest_t * manifest = (const app_manifest_t *) APP_MANIFEST_ADDR;
 
     if (APP_MANIFEST_MAGIC == manifest->magic)
@@ -239,14 +241,15 @@ void hal_entry(void)
 
         app_prg = (void(*)(void))(uintptr_t)manifest->entry_point;
     }
+#endif
   #endif
 
   #if !SSBL_CFG_SECURE_PACKAGE_DEPLOY_ENABLE
-//      SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
-//      while (1)
-//      {
-//          ;
-//      }
+      SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
+      while (1)
+      {
+          ;
+      }
   #else
       SSBL_TRACE("[SSBL] secure package deploy start\n");
       #if SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_RZSM
@@ -330,9 +333,6 @@ void hal_entry(void)
 
     R_BSP_CacheCleanInvalidateAll();
 
-//    R_BSP_CacheDisableData();              // added by deane for debuging app bsp_memory_protect_setting() issue
-//    R_BSP_CacheDisableInst();              // added by deane for debuging app bsp_memory_protect_setting() issue
-//    R_BSP_CacheDisableMemoryProtect();     // added by deane for debuging app bsp_memory_protect_setting() issue
     
     __asm volatile("dsb");
     __asm volatile("isb");
@@ -349,6 +349,40 @@ void hal_entry(void)
     app_prg();
 }
 
+#define QSPI_CMD_WRITE_ENABLE 0
+#define QSPI_CMD_WRITE_STATUS 1
+#define QSPI_CMD_READ_STATUS  2
+spi_flash_direct_transfer_t qspi_command[3] =
+{
+    {
+    .command        = 0x06,
+    .address        = 0U,
+    .data           = 0U,
+    .command_length = 1U,
+    .address_length = 0U,
+    .data_length    = 0U,
+    .dummy_cycles   = 0U
+    },
+    {
+    .command        = 0x01,
+    .address        = 0U,
+    .data           = 0x40,
+    .command_length = 1U,
+    .address_length = 0U,
+    .data_length    = 1U,
+    .dummy_cycles   = 0U
+    },
+    {
+    .command        = 0x05,
+    .address        = 0U,
+    .data           = 0U,
+    .command_length = 1U,
+    .address_length = 0U,
+    .data_length    = 1U,
+    .dummy_cycles   = 0U
+    },
+};
+
 /*******************************************************************************************************************//**
  * This function is called at various points during the startup process.  This implementation uses the event that is
  * called right before main() to set up the pins.
@@ -357,6 +391,13 @@ void hal_entry(void)
  **********************************************************************************************************************/
 void R_BSP_WarmStart (bsp_warm_start_event_t event)
 {
+  
+    if (BSP_WARM_START_POST_LOADER == event)
+    {
+        R_IOPORT_Open(&IOPORT_CFG_CTRL, &IOPORT_CFG_NAME);
+
+        bsp_qspi_quad_enable();
+    }
     if (BSP_WARM_START_RESET == event)
     {
     	/* Pre clock initialization */
@@ -400,7 +441,7 @@ void R_BSP_WarmStart (bsp_warm_start_event_t event)
         bsp_sdram_init();
 #endif
         
-        bsp_qspi_quad_enable();
+        //bsp_qspi_quad_enable();
     }
 }
 
@@ -542,45 +583,7 @@ uint16_t swap16(uint16_t value)
 
 #endif
 
-/*******************************************************************************************************************//**
- * @brief      Switch external QSPI flash to Quad mode (1S-4S-4S, 0xEB read).
- *
- * Ported verbatim from rzn2l_xspi_boot/src/hal_entry.c POST_LOADER block.
- * Issues WEN -> WRSR(0x40) -> poll WIP=0 -> poll status&0x41==0x40 -> protocol switch.
- **********************************************************************************************************************/
-#define QSPI_CMD_WRITE_ENABLE 0
-#define QSPI_CMD_WRITE_STATUS 1
-#define QSPI_CMD_READ_STATUS  2
-static spi_flash_direct_transfer_t qspi_command[3] =
-{
-    {
-    .command        = 0x06, /* WEN  (Write Enable)        */
-    .address        = 0U,
-    .data           = 0U,
-    .command_length = 1U,
-    .address_length = 0U,
-    .data_length    = 0U,
-    .dummy_cycles   = 0U
-    },
-    {
-    .command        = 0x01, /* WRSR (Write Status Reg)    */
-    .address        = 0U,
-    .data           = 0x40,
-    .command_length = 1U,
-    .address_length = 0U,
-    .data_length    = 1U,
-    .dummy_cycles   = 0U
-    },
-    {
-    .command        = 0x05, /* RDSR (Read Status Reg)     */
-    .address        = 0U,
-    .data           = 0U,
-    .command_length = 1U,
-    .address_length = 0U,
-    .data_length    = 1U,
-    .dummy_cycles   = 0U
-    },
-};
+
 
 static void bsp_qspi_quad_enable (void)
 {
