@@ -512,6 +512,7 @@
             <path>src/app_manifest_abi.h</path>
             <path>src/hal_entry.c</path>
             <path>src/fsp_mod/r_xspi_qspi.c</path>
+            <path>src/fsp_mod/startup.c</path>
             <path>src/loader_table.c</path>
             <path>src/loader_table.h</path>
             <path>src/secure_app_deploy.c</path>
