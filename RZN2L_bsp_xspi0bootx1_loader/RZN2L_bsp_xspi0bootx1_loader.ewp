@@ -2363,6 +2363,9 @@
                 <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\r_xspi_hyper_cfg.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\rzn_cfg\fsp_cfg\r_xspi_hyper_cfg.h.bak</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\rzn_cfg\driver\r_xspi_qspi_cfg.h</name>
             </file>
         </group>
@@ -3762,6 +3765,9 @@
             </weakFile>
             <file>
                 <name>$PROJ_DIR$\src\hal_entry.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\hram_sample.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\src\loader_table.c</name>

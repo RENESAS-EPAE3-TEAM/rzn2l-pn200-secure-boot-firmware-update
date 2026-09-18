@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import struct
 import sys
 import zlib
@@ -36,16 +37,22 @@ APP_MANIFEST_HEADER_SIZE = 16
 APP_MANIFEST_MAX_ENTRIES = 9
 
 SECURE_MANIFEST_MAGIC = 0x4D535A52  # 'RZSM'
-SECURE_MANIFEST_VERSION = 0x00010000
+SECURE_MANIFEST_VERSION = 0x00020000
 SECURE_MANIFEST_HEADER_SIZE = 64
-SECURE_MANIFEST_ENTRY_SIZE = 64
+SECURE_MANIFEST_ENTRY_SIZE = 96
 
 KEY_CERT_SIZE = 0xE0
 CODE_CERT_SIZE = 0x120
 TOTAL_CERT_SIZE = KEY_CERT_SIZE + CODE_CERT_SIZE
 
 SEGMENT_FLAG_ENABLE = 1 << 0
+SEGMENT_FLAG_ENCRYPTED = 1 << 1
 SEGMENT_FLAG_HASH_VALID = 1 << 3
+
+AES_BLOCK_SIZE = 16
+AES_128_KEY_SIZE = 16
+AES_KEY_SELECTION_NONE = 0
+AES_KEY_SELECTION_CKEY0 = 1
 
 SEGMENT_NAMES = [
     "LDR_PRG",
@@ -96,8 +103,11 @@ class SecureEntry:
     file_size: int
     mem_size: int
     load_attr: int
-    reserved: int
+    cipher_size: int
+    aes_key_selection: int
+    aes_cbc_iv: bytes
     sha256_words: tuple[int, ...]
+    reserved_words: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -189,6 +199,36 @@ def parse_legacy_manifest(app_image: bytes, app_manifest_offset: int) -> LegacyM
     return LegacyManifest(entry_point, entries)
 
 
+def encrypt_aes_128_cbc(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
+    if len(key) != AES_128_KEY_SIZE:
+        raise ValueError(f"AES-128 key must be {AES_128_KEY_SIZE} bytes")
+    if len(iv) != AES_BLOCK_SIZE:
+        raise ValueError(f"AES-CBC IV must be {AES_BLOCK_SIZE} bytes")
+    if len(plaintext) == 0 or len(plaintext) % AES_BLOCK_SIZE:
+        raise ValueError("AES-CBC plaintext must be a nonzero multiple of 16 bytes; padding is not supported")
+
+    try:
+        from Crypto.Cipher import AES
+    except ImportError as exc:
+        raise ValueError("AES-CBC packaging requires the Python 'pycryptodome' package") from exc
+
+    return AES.new(key, AES.MODE_CBC, iv).encrypt(plaintext)
+
+
+def decrypt_aes_128_cbc(ciphertext: bytes, key: bytes, iv: bytes) -> bytes:
+    if len(key) != AES_128_KEY_SIZE or len(iv) != AES_BLOCK_SIZE:
+        raise ValueError("invalid AES-CBC key or IV size")
+    if len(ciphertext) == 0 or len(ciphertext) % AES_BLOCK_SIZE:
+        raise ValueError("AES-CBC ciphertext must be a nonzero multiple of 16 bytes")
+
+    try:
+        from Crypto.Cipher import AES
+    except ImportError as exc:
+        raise ValueError("AES-CBC packaging requires the Python 'pycryptodome' package") from exc
+
+    return AES.new(key, AES.MODE_CBC, iv).decrypt(ciphertext)
+
+
 def make_secure_manifest(
     app_image: bytes,
     legacy_manifest: LegacyManifest,
@@ -197,12 +237,27 @@ def make_secure_manifest(
     package_version: int,
     package_flags: int,
     alignment: int,
-) -> tuple[bytes, int]:
+    encrypt_segment_id: int | None,
+    aes_key: bytes | None,
+) -> tuple[bytes, int, bytes]:
     active_entries = [entry for entry in legacy_manifest.entries if (entry.flags & SEGMENT_FLAG_ENABLE) and entry.size]
+    if encrypt_segment_id is not None:
+        selected_entries = [entry for entry in active_entries if entry.segment_id == encrypt_segment_id]
+        if len(selected_entries) != 1:
+            raise ValueError(f"encrypted segment {encrypt_segment_id} is not an enabled App segment")
+        if encrypt_segment_id not in (5, 6):
+            raise ValueError("only SYSTEM_PRG (5) or SYSTEM_DATA (6) may be encrypted")
+        if aes_key is None:
+            raise ValueError("--aes-key is required with --encrypt-segment")
+    elif aes_key is not None:
+        raise ValueError("--aes-key requires --encrypt-segment")
+
     manifest_size = SECURE_MANIFEST_HEADER_SIZE + len(active_entries) * SECURE_MANIFEST_ENTRY_SIZE
     payload_offset = align_up(manifest_size, alignment)
-    payload_size = len(app_image)
+    payload_size = align_up(len(app_image), AES_BLOCK_SIZE)
     package_size = payload_offset + payload_size
+    package_payload = bytearray(app_image)
+    package_payload.extend(bytes(payload_size - len(app_image)))
 
     secure_entries = bytearray()
     for entry in active_entries:
@@ -216,13 +271,25 @@ def make_secure_manifest(
                 f"segment {entry.segment_id} source range 0x{entry.src:08X}+0x{entry.size:X} is outside the App image"
             )
 
-        segment_data = app_image[image_offset:image_offset + entry.size]
-        digest_words = struct.unpack("<8I", hashlib.sha256(segment_data).digest())
+        plaintext = app_image[image_offset:image_offset + entry.size]
+        digest_words = struct.unpack("<8I", hashlib.sha256(plaintext).digest())
         flags = SEGMENT_FLAG_ENABLE | SEGMENT_FLAG_HASH_VALID
         src_offset = payload_offset + image_offset
+        cipher_size = entry.size
+        aes_key_selection = AES_KEY_SELECTION_NONE
+        aes_cbc_iv = bytes(AES_BLOCK_SIZE)
+
+        if entry.segment_id == encrypt_segment_id:
+            aes_cbc_iv = os.urandom(AES_BLOCK_SIZE)
+            ciphertext = encrypt_aes_128_cbc(plaintext, aes_key, aes_cbc_iv)
+            if len(ciphertext) != entry.size:
+                raise ValueError("AES-CBC ciphertext size changed; padding is not supported")
+            package_payload[image_offset:image_offset + entry.size] = ciphertext
+            flags |= SEGMENT_FLAG_ENCRYPTED
+            aes_key_selection = AES_KEY_SELECTION_CKEY0
 
         secure_entries += struct.pack(
-            "<IIIIIIII8I",
+            "<9I16s8I3I",
             entry.segment_id,
             flags,
             src_offset,
@@ -230,8 +297,13 @@ def make_secure_manifest(
             entry.size,
             entry.size,
             0,
-            0,
+            cipher_size,
+            aes_key_selection,
+            aes_cbc_iv,
             *digest_words,
+            0,
+            0,
+            0,
         )
 
     header_without_crc = struct.pack(
@@ -256,7 +328,7 @@ def make_secure_manifest(
 
     crc = zlib.crc32(header_without_crc + secure_entries) & 0xFFFFFFFF
     header = header_without_crc[:-4] + struct.pack("<I", crc)
-    return header + bytes(secure_entries), payload_offset
+    return header + bytes(secure_entries), payload_offset, bytes(package_payload)
 
 
 def parse_secure_manifest(body: bytes) -> SecureManifest:
@@ -315,8 +387,8 @@ def parse_secure_manifest(body: bytes) -> SecureManifest:
     entries: list[SecureEntry] = []
     entry_offset = SECURE_MANIFEST_HEADER_SIZE
     for _ in range(segment_count):
-        values = struct.unpack_from("<IIIIIIII8I", body, entry_offset)
-        entries.append(SecureEntry(*values[:8], tuple(values[8:])))
+        values = struct.unpack_from("<9I16s8I3I", body, entry_offset)
+        entries.append(SecureEntry(*values[:9], values[9], tuple(values[10:18]), tuple(values[18:21])))
         entry_offset += SECURE_MANIFEST_ENTRY_SIZE
 
     return SecureManifest(*header_values, entries)
@@ -358,12 +430,61 @@ def validate_secure_manifest_against_legacy(body: bytes, manifest: SecureManifes
         if secure_entry.file_size != legacy_entry.size or secure_entry.mem_size != legacy_entry.size:
             raise ValueError(f"segment {legacy_entry.segment_id} size mismatch")
 
-        payload = body[secure_entry.src_offset:secure_entry.src_offset + secure_entry.file_size]
-        digest_words = struct.unpack("<8I", hashlib.sha256(payload).digest())
-        if secure_entry.sha256_words != digest_words:
-            raise ValueError(f"segment {legacy_entry.segment_id} sha256 mismatch")
+        if secure_entry.flags & SEGMENT_FLAG_ENCRYPTED:
+            if legacy_entry.segment_id not in (5, 6):
+                raise ValueError(f"segment {legacy_entry.segment_id} is not permitted to be encrypted")
+            if (secure_entry.cipher_size != secure_entry.file_size or
+                    secure_entry.cipher_size == 0 or
+                    secure_entry.cipher_size % AES_BLOCK_SIZE or
+                    secure_entry.aes_key_selection != AES_KEY_SELECTION_CKEY0 or
+                    secure_entry.aes_cbc_iv == bytes(AES_BLOCK_SIZE)):
+                raise ValueError(f"segment {legacy_entry.segment_id} has invalid AES-CBC metadata")
+        elif (secure_entry.cipher_size != secure_entry.file_size or
+              secure_entry.aes_key_selection != AES_KEY_SELECTION_NONE or
+              secure_entry.aes_cbc_iv != bytes(AES_BLOCK_SIZE)):
+            raise ValueError(f"segment {legacy_entry.segment_id} has invalid plaintext metadata")
 
     return legacy_manifest
+
+
+def validate_generated_body(body: bytes, app_image: bytes, aes_key: bytes | None) -> None:
+    manifest = parse_secure_manifest(body)
+    legacy_manifest = validate_secure_manifest_against_legacy(body, manifest)
+    encrypted_ivs: set[bytes] = set()
+
+    for legacy_entry in legacy_manifest.entries:
+        if not ((legacy_entry.flags & SEGMENT_FLAG_ENABLE) and legacy_entry.size):
+            continue
+        secure_entry = next(entry for entry in manifest.entries if entry.segment_id == legacy_entry.segment_id)
+        image_offset = legacy_entry.src - manifest.image_base_addr
+        plaintext = app_image[image_offset:image_offset + legacy_entry.size]
+        payload = body[secure_entry.src_offset:secure_entry.src_offset + secure_entry.cipher_size]
+        plaintext_digest_words = struct.unpack("<8I", hashlib.sha256(plaintext).digest())
+
+        if secure_entry.sha256_words != plaintext_digest_words:
+            raise ValueError(f"SHA-256 mismatch for segment {legacy_entry.segment_id}")
+
+        if secure_entry.flags & SEGMENT_FLAG_ENCRYPTED:
+            if aes_key is None:
+                raise ValueError("cannot validate encrypted output without the AES key")
+            if secure_entry.aes_cbc_iv in encrypted_ivs:
+                raise ValueError("AES-CBC IV is reused by multiple encrypted segments")
+            encrypted_ivs.add(secure_entry.aes_cbc_iv)
+            if decrypt_aes_128_cbc(payload, aes_key, secure_entry.aes_cbc_iv) != plaintext:
+                raise ValueError(f"AES-CBC round-trip mismatch for segment {legacy_entry.segment_id}")
+        else:
+            if payload != plaintext:
+                raise ValueError(f"plaintext payload mismatch for segment {legacy_entry.segment_id}")
+
+
+def parse_segment_id(value: str) -> int:
+    normalized = value.strip().upper()
+    if normalized in SEGMENT_NAMES:
+        return SEGMENT_NAMES.index(normalized)
+    try:
+        return int(value, 0)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"unknown segment: {value}") from exc
 
 
 def inspect_package_body(body: bytes, package_base: int, code_cert: bytes | None, summary_out: Path | None) -> None:
@@ -392,6 +513,9 @@ def inspect_package_body(body: bytes, package_base: int, code_cert: bytes | None
                 "dst": hex32(entry.dst_addr),
                 "file_size": entry.file_size,
                 "mem_size": entry.mem_size,
+                "cipher_size": entry.cipher_size,
+                "aes_key_selection": entry.aes_key_selection,
+                "aes_cbc_iv": entry.aes_cbc_iv.hex() if entry.flags & SEGMENT_FLAG_ENCRYPTED else None,
                 "flags": hex32(entry.flags),
             }
             for entry in manifest.entries
@@ -438,6 +562,9 @@ def inspect_overall_app_body(body: bytes, package_base: int, image_base: int, co
                 "runtime_src": hex32(body_addr + (entry.src - image_base)) if entry.src >= image_base else None,
                 "dst": hex32(entry.dst),
                 "size": entry.size,
+                "cipher_size": entry.size,
+                "aes_key_selection": AES_KEY_SELECTION_NONE,
+                "aes_cbc_iv": None,
                 "flags": hex32(entry.flags),
             }
             for entry in legacy_manifest.entries
@@ -472,11 +599,14 @@ def write_json_summary(
     key_cert: bytes | None,
     code_cert: bytes | None,
 ) -> None:
+    secure_manifest = parse_secure_manifest(body)
+    secure_entries = {entry.segment_id: entry for entry in secure_manifest.entries}
     entries = []
     for entry in legacy_manifest.entries:
         if not ((entry.flags & SEGMENT_FLAG_ENABLE) and entry.size):
             continue
         image_offset = entry.src - image_base
+        secure_entry = secure_entries[entry.segment_id]
         entries.append(
             {
                 "segment_id": entry.segment_id,
@@ -486,7 +616,10 @@ def write_json_summary(
                 "src_offset_in_body": hex32(payload_offset + image_offset),
                 "dst": hex32(entry.dst),
                 "size": entry.size,
-                "flags": hex32(entry.flags),
+                "cipher_size": secure_entry.cipher_size,
+                "aes_key_selection": secure_entry.aes_key_selection,
+                "aes_cbc_iv": secure_entry.aes_cbc_iv.hex() if secure_entry.flags & SEGMENT_FLAG_ENCRYPTED else None,
+                "flags": hex32(secure_entry.flags),
             }
         )
 
@@ -660,6 +793,8 @@ def main() -> int:
     parser.add_argument("--package-version", type=parse_int, default=1, help="Monotonic package version for future anti-rollback")
     parser.add_argument("--package-flags", type=parse_int, default=0, help="Reserved package flags")
     parser.add_argument("--align", type=parse_int, default=16, help="Payload alignment in bytes")
+    parser.add_argument("--encrypt-segment", type=parse_segment_id, help="Encrypt one RZSM segment: SYSTEM_PRG, SYSTEM_DATA, 5, or 6")
+    parser.add_argument("--aes-key", type=Path, help="16-byte host key file corresponding to provisioned ckey0")
     parser.add_argument(
         "--no-cert-layout-check",
         action="store_true",
@@ -671,7 +806,7 @@ def main() -> int:
         raise ValueError("--inspect-body and --inspect-signed-package are mutually exclusive")
 
     if args.inspect_body or args.inspect_signed_package:
-        if args.app_bin or args.manifest_out or args.body_out or args.package_out or args.signed_package_out:
+        if args.app_bin or args.manifest_out or args.body_out or args.package_out or args.signed_package_out or args.encrypt_segment or args.aes_key:
             raise ValueError("inspect mode cannot be combined with generation outputs")
         if args.inspect_body:
             body = args.inspect_body.read_bytes()
@@ -751,7 +886,8 @@ def main() -> int:
         print(f"entry point:      0x{legacy_manifest.entry_point:08X}")
         return 0
 
-    manifest, payload_offset = make_secure_manifest(
+    aes_key = read_fixed_size(args.aes_key, AES_128_KEY_SIZE, "AES-128 key") if args.aes_key else None
+    manifest, payload_offset, package_payload = make_secure_manifest(
         app_image,
         legacy_manifest,
         args.image_base,
@@ -759,13 +895,16 @@ def main() -> int:
         args.package_version,
         args.package_flags,
         args.align,
+        args.encrypt_segment,
+        aes_key,
     )
 
     args.manifest_out.parent.mkdir(parents=True, exist_ok=True)
     args.manifest_out.write_bytes(manifest)
 
     padding = bytes([0xFF]) * (payload_offset - len(manifest))
-    body = manifest + padding + app_image
+    body = manifest + padding + package_payload
+    validate_generated_body(body, app_image, aes_key)
 
     if body_out:
         body_out.parent.mkdir(parents=True, exist_ok=True)

@@ -7,6 +7,11 @@
 #include "secure_app_package.h"
 #include "sio_char.h"
 #include <stdio.h>
+#include <string.h>
+
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
+#include "r_cip_drv_api.h"
+#endif
 
 #if SSBL_CFG_DEBUG_UART_ENABLE
 #define SSBL_DEPLOY(...) printf(__VA_ARGS__)
@@ -57,7 +62,12 @@ static void ssbl_deploy_print_segment(uint32_t segment_index,
 #define SECURE_APP_CS2_RAM_START                 (0x74000000u)
 #define SECURE_APP_CS2_RAM_END_EXCLUSIVE         (0x74200000u)
 
-#define SECURE_APP_SUPPORTED_SEGMENT_FLAGS       (SECURE_APP_SEGMENT_FLAG_ENABLE | SECURE_APP_SEGMENT_FLAG_HASH_VALID)
+#define SECURE_APP_AES_BLOCK_SIZE                 (16u)
+#define SECURE_APP_CKEY0_SELECT                   (0x00020000u)
+#define SECURE_APP_CBC_IV_SELECT_CODE_CERT        (0x00030000u)
+#define SECURE_APP_SUPPORTED_SEGMENT_FLAGS       (SECURE_APP_SEGMENT_FLAG_ENABLE | \
+                                                   SECURE_APP_SEGMENT_FLAG_ENCRYPTED | \
+                                                   SECURE_APP_SEGMENT_FLAG_HASH_VALID)
 
 typedef struct st_secure_app_memory_window
 {
@@ -131,10 +141,102 @@ static int segment_destination_allowed(uint32_t segment_id, uint32_t dst_addr, u
     return 0;
 }
 
+static uint32_t segment_payload_size(const secure_app_manifest_entry_t * entry)
+{
+    if (entry->flags & SECURE_APP_SEGMENT_FLAG_ENCRYPTED)
+    {
+        return entry->cipher_size;
+    }
+
+    return entry->file_size;
+}
+
+static int encrypted_segment_destination_allowed(const secure_app_manifest_entry_t * entry)
+{
+    return (SECURE_APP_SEGMENT_ID_SYSTEM_PRG == entry->segment_id) ||
+           (SECURE_APP_SEGMENT_ID_SYSTEM_DATA == entry->segment_id);
+}
+
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
+static cip_drv_ret_t decrypt_encrypted_segment(const secure_app_manifest_entry_t * entry)
+{
+    uint32_t iv[SECURE_APP_AES_CBC_IV_SIZE / sizeof(uint32_t)];
+    st_cip_drv_cipher_img_param_t decrypt_param;
+
+    memcpy(iv, entry->aes_cbc_iv, sizeof(iv));
+    decrypt_param.timing      = CIP_DRV_CIPHER_TIMING_NONE;
+    decrypt_param.p_img_src   = (const uint32_t *)(uintptr_t)(SECURE_APP_PACKAGE_BODY_ADDR + entry->src_offset);
+    decrypt_param.p_img_dst   = (uint32_t *)(uintptr_t)entry->dst_addr;
+    decrypt_param.img_len     = entry->cipher_size;
+    decrypt_param.cipher_algo = CIP_DRV_CIPHER_ALGO_AES128;
+    decrypt_param.cipher_mode = CIP_DRV_CIPHER_MODE_CBC;
+    decrypt_param.key_select  = SECURE_APP_CKEY0_SELECT;
+    decrypt_param.iv_select   = SECURE_APP_CBC_IV_SELECT_CODE_CERT;
+    decrypt_param.p_iv        = iv;
+    decrypt_param.iv_len      = sizeof(iv);
+
+    return R_CIP_DRV_PrcDecryptImage(&decrypt_param);
+}
+#endif
+
+static int cbc_iv_is_zero(const uint8_t iv[SECURE_APP_AES_CBC_IV_SIZE])
+{
+    uint32_t i;
+
+    for (i = 0u; i < SECURE_APP_AES_CBC_IV_SIZE; i++)
+    {
+        if (0u != iv[i])
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static int encrypted_iv_is_reused(const secure_app_manifest_t * manifest, uint32_t index)
+{
+    const secure_app_manifest_entry_t * entry = &manifest->entries[index];
+    uint32_t i;
+
+    if (0u == (entry->flags & SECURE_APP_SEGMENT_FLAG_ENCRYPTED))
+    {
+        return 0;
+    }
+
+    for (i = 0u; i < index; i++)
+    {
+        const secure_app_manifest_entry_t * other = &manifest->entries[i];
+        if ((other->flags & (SECURE_APP_SEGMENT_FLAG_ENABLE | SECURE_APP_SEGMENT_FLAG_ENCRYPTED)) ==
+            (SECURE_APP_SEGMENT_FLAG_ENABLE | SECURE_APP_SEGMENT_FLAG_ENCRYPTED))
+        {
+            uint32_t byte_index;
+            int iv_matches = 1;
+
+            for (byte_index = 0u; byte_index < SECURE_APP_AES_CBC_IV_SIZE; byte_index++)
+            {
+                if (entry->aes_cbc_iv[byte_index] != other->aes_cbc_iv[byte_index])
+                {
+                    iv_matches = 0;
+                    break;
+                }
+            }
+
+            if (iv_matches)
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 static int segment_source_allowed(const secure_app_manifest_header_t * header, const secure_app_manifest_entry_t * entry)
 {
     uint32_t body_addr = SECURE_APP_PACKAGE_BODY_ADDR;
     uint32_t source_addr = body_addr + entry->src_offset;
+    uint32_t payload_size = segment_payload_size(entry);
 
     if (source_addr < body_addr)
     {
@@ -146,12 +248,12 @@ static int segment_source_allowed(const secure_app_manifest_header_t * header, c
         return 0;
     }
 
-    if (!range_inside(source_addr, entry->file_size, body_addr, body_addr + header->package_size))
+    if (!range_inside(source_addr, payload_size, body_addr, body_addr + header->package_size))
     {
         return 0;
     }
 
-    return range_inside(source_addr, entry->file_size, SECURE_APP_FLASH_BANK_START, SECURE_APP_FLASH_BANK_END_EXCLUSIVE);
+    return range_inside(source_addr, payload_size, SECURE_APP_FLASH_BANK_START, SECURE_APP_FLASH_BANK_END_EXCLUSIVE);
 }
 
 static int segments_overlap(uint32_t start_a, uint32_t size_a, uint32_t start_b, uint32_t size_b)
@@ -206,6 +308,7 @@ static const secure_app_manifest_entry_t * find_secure_entry(const secure_app_ma
     return NULL;
 }
 
+#if 0
 static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * manifest)
 {
     uint32_t app_manifest_end = manifest->header.app_manifest_offset + sizeof(app_manifest_t);
@@ -316,6 +419,7 @@ static int validate_legacy_manifest_equivalence(const secure_app_manifest_t * ma
 
     return 1;
 }
+#endif
 
 static secure_app_deploy_result_t validate_header(const secure_app_manifest_header_t * header)
 {
@@ -429,11 +533,6 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
         return SECURE_APP_DEPLOY_ERR_ENTRY_POINT;
     }
 
-    if (!validate_legacy_manifest_equivalence(manifest))
-    {
-        return SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH;
-    }
-
     for (i = 0u; i < manifest->header.segment_count; i++)
     {
         const secure_app_manifest_entry_t * entry = &manifest->entries[i];
@@ -455,6 +554,41 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
                               entry->dst_addr,
                               entry->file_size,
                               entry->flags);
+            return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
+        }
+
+        if (entry->flags & SECURE_APP_SEGMENT_FLAG_ENCRYPTED)
+        {
+            if ((0u == entry->cipher_size) ||
+                (0u != (entry->cipher_size % SECURE_APP_AES_BLOCK_SIZE)) ||
+                (entry->cipher_size != entry->file_size) ||
+                (SECURE_APP_AES_KEY_SELECTION_CKEY0 != entry->aes_key_selection) ||
+                !encrypted_segment_destination_allowed(entry) ||
+                (0u != (entry->src_offset % sizeof(uint32_t))) ||
+                (0u != (entry->dst_addr % sizeof(uint32_t))) ||
+                cbc_iv_is_zero(entry->aes_cbc_iv) ||
+                encrypted_iv_is_reused(manifest, i))
+            {
+                deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
+                                  SECURE_APP_DEPLOY_STAGE_SEGMENT_CRYPTO,
+                                  i,
+                                  entry->segment_id,
+                                  entry->dst_addr,
+                                  entry->cipher_size,
+                                  entry->aes_key_selection);
+                return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
+            }
+        }
+        else if ((entry->cipher_size != entry->file_size) ||
+                 (SECURE_APP_AES_KEY_SELECTION_NONE != entry->aes_key_selection))
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_CRYPTO,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->cipher_size,
+                              entry->aes_key_selection);
             return SECURE_APP_DEPLOY_ERR_SEGMENT_FLAGS;
         }
 
@@ -542,16 +676,47 @@ secure_app_deploy_result_t secure_app_deploy_copy(const secure_app_manifest_t * 
             continue;
         }
 
-        deploy_status_set(SECURE_APP_DEPLOY_OK,
-                          SECURE_APP_DEPLOY_STAGE_COPY,
-                          i,
-                          entry->segment_id,
-                          entry->dst_addr,
-                          entry->file_size,
-                          entry->src_offset);
-        copy_func((uintptr_t *)(uintptr_t)(body_addr + entry->src_offset),
-                  (uintptr_t *)(uintptr_t)entry->dst_addr,
-                  (uintptr_t) entry->file_size);
+        if (entry->flags & SECURE_APP_SEGMENT_FLAG_ENCRYPTED)
+        {
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
+            cip_drv_ret_t decrypt_result;
+
+            decrypt_result = decrypt_encrypted_segment(entry);
+            if (CIP_DRV_RET_PASS != decrypt_result)
+            {
+                deploy_status_set(SECURE_APP_DEPLOY_ERR_ENCRYPTED_SEGMENT,
+                                  SECURE_APP_DEPLOY_STAGE_SEGMENT_CRYPTO,
+                                  i,
+                                  entry->segment_id,
+                                  entry->dst_addr,
+                                  entry->cipher_size,
+                                  decrypt_result);
+                return SECURE_APP_DEPLOY_ERR_ENCRYPTED_SEGMENT;
+            }
+#else
+            deploy_status_set(SECURE_APP_DEPLOY_ERR_ENCRYPTED_SEGMENT,
+                              SECURE_APP_DEPLOY_STAGE_SEGMENT_CRYPTO,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->cipher_size,
+                              entry->aes_key_selection);
+            return SECURE_APP_DEPLOY_ERR_ENCRYPTED_SEGMENT;
+#endif
+        }
+        else
+        {
+            deploy_status_set(SECURE_APP_DEPLOY_OK,
+                              SECURE_APP_DEPLOY_STAGE_COPY,
+                              i,
+                              entry->segment_id,
+                              entry->dst_addr,
+                              entry->file_size,
+                              entry->src_offset);
+            copy_func((uintptr_t *)(uintptr_t)(body_addr + entry->src_offset),
+                      (uintptr_t *)(uintptr_t)entry->dst_addr,
+                      (uintptr_t) entry->file_size);
+        }
     }
 
     *p_entry = (void (*)(void))(uintptr_t)manifest->header.entry_point;

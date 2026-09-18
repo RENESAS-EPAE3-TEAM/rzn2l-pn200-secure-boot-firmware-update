@@ -17,6 +17,7 @@ typedef enum e_secure_app_deploy_result
     SECURE_APP_DEPLOY_ERR_SEGMENT_OVERLAP,
     SECURE_APP_DEPLOY_ERR_LEGACY_MISMATCH,
     SECURE_APP_DEPLOY_ERR_ENTRY_POINT,
+    SECURE_APP_DEPLOY_ERR_ENCRYPTED_SEGMENT,
 } secure_app_deploy_result_t;
 
 typedef enum e_secure_app_deploy_stage
@@ -30,6 +31,7 @@ typedef enum e_secure_app_deploy_stage
     SECURE_APP_DEPLOY_STAGE_SEGMENT_SOURCE,
     SECURE_APP_DEPLOY_STAGE_SEGMENT_DESTINATION,
     SECURE_APP_DEPLOY_STAGE_SEGMENT_OVERLAP,
+    SECURE_APP_DEPLOY_STAGE_SEGMENT_CRYPTO,
     SECURE_APP_DEPLOY_STAGE_COPY,
     SECURE_APP_DEPLOY_STAGE_DONE,
 } secure_app_deploy_stage_t;

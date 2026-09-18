@@ -858,11 +858,11 @@
     </config>
     <config id="config.driver.rsip_protected">
       <property id="config.driver.rsip_protected.param_checking_enable" value="config.driver.rsip_protected.param_checking_enable.bsp"/>
-      <property id="config.driver.rsip_protected.aes.128" value="config.driver.rsip_protected.aes.128.disabled"/>
+      <property id="config.driver.rsip_protected.aes.128" value="config.driver.rsip_protected.aes.128.enabled"/>
       <property id="config.driver.rsip_protected.aes.256" value="config.driver.rsip_protected.aes.256.disabled"/>
       <property id="config.driver.rsip_protected.xts_aes.128" value="config.driver.rsip_protected.xts_aes.128.disabled"/>
       <property id="config.driver.rsip_protected.xts_aes.256" value="config.driver.rsip_protected.xts_aes.256.disabled"/>
-      <property id="config.driver.rsip_protected.aes.ecb_cbc_ctr" value="config.driver.rsip_protected.aes.ecb_cbc_ctr.disabled"/>
+      <property id="config.driver.rsip_protected.aes.ecb_cbc_ctr" value="config.driver.rsip_protected.aes.ecb_cbc_ctr.enabled"/>
       <property id="config.driver.rsip_protected.aes.xts" value="config.driver.rsip_protected.aes.xts.disabled"/>
       <property id="config.driver.rsip_protected.aes.gcm" value="config.driver.rsip_protected.aes.gcm.disabled"/>
       <property id="config.driver.rsip_protected.aes.ccm" value="config.driver.rsip_protected.aes.ccm.disabled"/>

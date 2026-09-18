@@ -37,6 +37,7 @@ typedef struct st_secure_app_verify_status
 extern volatile secure_app_verify_status_t g_secure_app_verify_last_status;
 
 secure_app_verify_result_t secure_app_verify_package(void);
+secure_app_verify_result_t secure_app_verify_close(void);
 uint32_t secure_app_verify_last_fsp_error(void);
 uint32_t secure_app_verified_body_size(void);
 const volatile secure_app_verify_status_t * secure_app_verify_last_status(void);

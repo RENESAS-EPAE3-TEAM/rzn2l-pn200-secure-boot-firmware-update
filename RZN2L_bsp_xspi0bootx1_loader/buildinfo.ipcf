@@ -490,6 +490,7 @@
             <path>rzn_cfg/fsp_cfg/r_rsip_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/r_sci_uart_cfg.h</path>
             <path>rzn_cfg/fsp_cfg/r_xspi_hyper_cfg.h</path>
+            <path>rzn_cfg/fsp_cfg/r_xspi_hyper_cfg.h.bak</path>
         </group>
         <group name="Generated Data">
             <path>rzn_gen/bsp_clock_cfg.h</path>
@@ -510,9 +511,10 @@
         </group>
         <group name="Program Entry">
             <path>src/app_manifest_abi.h</path>
-            <path>src/hal_entry.c</path>
             <path>src/fsp_mod/r_xspi_qspi.c</path>
             <path>src/fsp_mod/startup.c</path>
+            <path>src/hal_entry.c</path>
+            <path>src/hram_sample.h</path>
             <path>src/loader_table.c</path>
             <path>src/loader_table.h</path>
             <path>src/secure_app_deploy.c</path>

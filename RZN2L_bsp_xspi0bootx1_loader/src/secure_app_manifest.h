@@ -4,10 +4,11 @@
 #include <stdint.h>
 
 #define SECURE_APP_MANIFEST_MAGIC          (0x4D535A52u) /* 'RZSM' little-endian */
-#define SECURE_APP_MANIFEST_VERSION        (0x00010000u)
+#define SECURE_APP_MANIFEST_VERSION        (0x00020000u)
 #define SECURE_APP_MANIFEST_HEADER_SIZE    (64u)
-#define SECURE_APP_MANIFEST_ENTRY_SIZE     (64u)
+#define SECURE_APP_MANIFEST_ENTRY_SIZE     (96u)
 #define SECURE_APP_MANIFEST_MAX_SEGMENTS   (16u)
+#define SECURE_APP_AES_CBC_IV_SIZE          (16u)
 
 #define SECURE_APP_SEGMENT_FLAG_ENABLE     (1u << 0)
 #define SECURE_APP_SEGMENT_FLAG_ENCRYPTED  (1u << 1)
@@ -27,6 +28,12 @@ typedef enum e_secure_app_segment_id
     SECURE_APP_SEGMENT_ID_SHARED_NONCACHE_BUFFER,
     SECURE_APP_SEGMENT_ID_VENDOR_START = 0x80
 } secure_app_segment_id_t;
+
+typedef enum e_secure_app_aes_key_selection
+{
+    SECURE_APP_AES_KEY_SELECTION_NONE  = 0u,
+    SECURE_APP_AES_KEY_SELECTION_CKEY0 = 1u,
+} secure_app_aes_key_selection_t;
 
 typedef struct st_secure_app_manifest_header
 {
@@ -57,9 +64,17 @@ typedef struct st_secure_app_manifest_entry
     uint32_t file_size;
     uint32_t mem_size;
     uint32_t load_attr;
-    uint32_t reserved;
+    uint32_t cipher_size;
+    uint32_t aes_key_selection;
+    uint8_t  aes_cbc_iv[SECURE_APP_AES_CBC_IV_SIZE];
     uint32_t sha256[8];
+    uint32_t reserved[3];
 } secure_app_manifest_entry_t;
+
+typedef char secure_app_manifest_header_size_must_match[
+    (sizeof(secure_app_manifest_header_t) == SECURE_APP_MANIFEST_HEADER_SIZE) ? 1 : -1];
+typedef char secure_app_manifest_entry_size_must_match[
+    (sizeof(secure_app_manifest_entry_t) == SECURE_APP_MANIFEST_ENTRY_SIZE) ? 1 : -1];
 
 typedef struct st_secure_app_manifest
 {

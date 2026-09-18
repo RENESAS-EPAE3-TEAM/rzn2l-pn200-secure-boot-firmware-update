@@ -10,12 +10,12 @@
 
             #define RSIP_CFG_PARAM_CHECKING_ENABLE               BSP_CFG_PARAM_CHECKING_ENABLE
 
-            #define RSIP_CFG_AES_128_ENABLE                      (0)
+            #define RSIP_CFG_AES_128_ENABLE                      (1)
             #define RSIP_CFG_AES_256_ENABLE                      (0)
             #define RSIP_CFG_XTS_AES_128_ENABLE                  (0)
             #define RSIP_CFG_XTS_AES_256_ENABLE                  (0)
 
-            #define RSIP_CFG_AES_ECB_CBC_CTR_ENABLE              (0)
+            #define RSIP_CFG_AES_ECB_CBC_CTR_ENABLE              (1)
             #define RSIP_CFG_AES_XTS_ENABLE                      (0)
 
             #define RSIP_CFG_AES_GCM_ENABLE                      (0)

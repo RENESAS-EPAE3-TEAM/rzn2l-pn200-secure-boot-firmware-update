@@ -209,6 +209,29 @@ static secure_app_verify_result_t verify_code_cert_layout(void)
     }
 
     g_secure_app_verified_body_size = header->img_len;
+#else
+    const secure_app_manifest_t * manifest = secure_app_manifest_ptr();
+
+    if (SECURE_APP_CODE_CERT_FLAGS_NON_ENC != header->flags)
+    {
+        SSBL_VERIFY("[SSBL][VERIFY][CODECERT] scheme A requires an outer non-encrypted image certificate\n");
+        return SECURE_APP_VERIFY_CODE_CERT_LAYOUT_FAILED;
+    }
+
+    if ((SECURE_APP_PACKAGE_BODY_ADDR != header->load_addr) ||
+        (SECURE_APP_PACKAGE_BODY_ADDR != header->dest_addr) ||
+        (header->img_len < SECURE_APP_MANIFEST_HEADER_SIZE) ||
+        !range_inside(SECURE_APP_PACKAGE_BODY_ADDR,
+                      header->img_len,
+                      SECURE_APP_FLASH_BANK_START,
+                      SECURE_APP_FLASH_BANK_END_EXCLUSIVE) ||
+        (header->img_len != manifest->header.package_size))
+    {
+        SSBL_VERIFY("[SSBL][VERIFY][CODECERT] scheme A image range does not match RZSM package\n");
+        return SECURE_APP_VERIFY_CODE_CERT_LAYOUT_FAILED;
+    }
+
+    g_secure_app_verified_body_size = header->img_len;
 #endif
 
     return SECURE_APP_VERIFY_OK;
@@ -227,6 +250,29 @@ const volatile secure_app_verify_status_t * secure_app_verify_last_status(void)
 uint32_t secure_app_verified_body_size(void)
 {
     return g_secure_app_verified_body_size;
+}
+
+secure_app_verify_result_t secure_app_verify_close(void)
+{
+#if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
+    fsp_err_t fsp_err;
+
+    verify_status_set(SECURE_APP_VERIFY_OK, SECURE_APP_VERIFY_STAGE_RSIP_CLOSE, 0u);
+    fsp_err = R_RSIP_Close(&g_rsip_ctrl);
+    if (FSP_SUCCESS != fsp_err)
+    {
+        g_secure_app_verify_last_fsp_error = (uint32_t) fsp_err;
+        verify_status_set(SECURE_APP_VERIFY_RSIP_CLOSE_FAILED,
+                          SECURE_APP_VERIFY_STAGE_RSIP_CLOSE,
+                          (uint32_t) fsp_err);
+        return SECURE_APP_VERIFY_RSIP_CLOSE_FAILED;
+    }
+
+    verify_status_set(SECURE_APP_VERIFY_OK, SECURE_APP_VERIFY_STAGE_DONE, 0u);
+    return SECURE_APP_VERIFY_OK;
+#else
+    return SECURE_APP_VERIFY_DISABLED;
+#endif
 }
 
 secure_app_verify_result_t secure_app_verify_package(void)
@@ -277,18 +323,6 @@ secure_app_verify_result_t secure_app_verify_package(void)
         return SECURE_APP_VERIFY_CODE_CERT_LAYOUT_FAILED;
     }
 #endif 
-    verify_status_set(SECURE_APP_VERIFY_OK, SECURE_APP_VERIFY_STAGE_RSIP_CLOSE, 0u);
-    fsp_err = R_RSIP_Close(&g_rsip_ctrl);
-    if (FSP_SUCCESS != fsp_err)
-    {
-        g_secure_app_verify_last_fsp_error = (uint32_t) fsp_err;
-        verify_status_set(SECURE_APP_VERIFY_RSIP_CLOSE_FAILED,
-                          SECURE_APP_VERIFY_STAGE_RSIP_CLOSE,
-                          (uint32_t) fsp_err);
-        return SECURE_APP_VERIFY_RSIP_CLOSE_FAILED;
-    }
-
-    verify_status_set(SECURE_APP_VERIFY_OK, SECURE_APP_VERIFY_STAGE_DONE, 0u);
     return SECURE_APP_VERIFY_OK;
 #else
     g_secure_app_verify_last_fsp_error = 0u;

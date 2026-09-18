@@ -97,14 +97,16 @@ static void ssbl_print_manifest_summary(const secure_app_manifest_t * manifest)
     for (uint32_t i = 0u; i < segment_count; i++)
     {
         const secure_app_manifest_entry_t * entry = &manifest->entries[i];
-        SSBL_TRACE("[SSBL][RZSM][SEG%lu] id=%lu flags=0x%08lx src_off=0x%08lx dst=0x%08lx file=0x%08lx mem=0x%08lx\n",
+        SSBL_TRACE("[SSBL][RZSM][SEG%lu] id=%lu flags=0x%08lx src_off=0x%08lx dst=0x%08lx file=0x%08lx cipher=0x%08lx mem=0x%08lx key=%lu\n",
                    (unsigned long) i,
                    (unsigned long) entry->segment_id,
                    (unsigned long) entry->flags,
                    (unsigned long) entry->src_offset,
                    (unsigned long) entry->dst_addr,
                    (unsigned long) entry->file_size,
-                   (unsigned long) entry->mem_size);
+                   (unsigned long) entry->cipher_size,
+                   (unsigned long) entry->mem_size,
+                   (unsigned long) entry->aes_key_selection);
     }
 }
 
@@ -206,46 +208,15 @@ void hal_entry(void)
   #elif SSBL_CFG_SECURE_APP_SCHEME == SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
       ssbl_print_legacy_manifest_summary(secure_app_legacy_manifest_ptr());
   
-#if 0      
-      //@@@@@@@@@@@@@@@@@@@@@@@@@@@ add for debug @@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      
-    const app_manifest_t * manifest = (const app_manifest_t *) APP_MANIFEST_ADDR;
 
-    if (APP_MANIFEST_MAGIC == manifest->magic)
-    {
-        uint32_t count = manifest->entry_count;
-        SSBL_TRACE("[SSBL][LEGACY] manifest=0x%08lx count=%lu entry=0x%08lx\n",
-                   (unsigned long)(uintptr_t) manifest,
-                   (unsigned long) manifest->entry_count,
-                   (unsigned long) manifest->entry_point);
-        if (count > APP_MANIFEST_ENTRIES)
-        {
-            count = APP_MANIFEST_ENTRIES;
-        }
-
-        for (uint32_t i = 0; i < count; i++)
-        {
-            const app_manifest_entry_t * e = &manifest->entries[i];
-            if ((e->flags & APP_MANIFEST_ENTRY_FLAG_ENABLE) && (e->size != 0u))
-            {
-                SSBL_TRACE("[SSBL][LEGACY] copy index=%lu src=0x%08lx dst=0x%08lx size=0x%08lx\n",
-                           (unsigned long) i,
-                           (unsigned long) e->src,
-                           (unsigned long) e->dst,
-                           (unsigned long) e->size);
-                bsp_copy_multibyte((uintptr_t *)(uintptr_t)e->src,
-                                   (uintptr_t *)(uintptr_t)e->dst,
-                                   (uintptr_t) e->size);
-            }
-        }
-
-        app_prg = (void(*)(void))(uintptr_t)manifest->entry_point;
-    }
-#endif
   #endif
 
   #if !SSBL_CFG_SECURE_PACKAGE_DEPLOY_ENABLE
       SSBL_TRACE("[SSBL] secure package deploy disabled after verify\n");
+      if (SECURE_APP_VERIFY_OK != secure_app_verify_close())
+      {
+          ssbl_print_verify_status("RSIP CLOSE FAIL");
+      }
       while (1)
       {
           ;
@@ -266,6 +237,10 @@ void hal_entry(void)
       #endif
           {
               ssbl_print_deploy_status("FAIL");
+              if (SECURE_APP_VERIFY_OK != secure_app_verify_close())
+              {
+                  ssbl_print_verify_status("RSIP CLOSE FAIL");
+              }
               while (1)
               {
                   ;
@@ -344,7 +319,14 @@ void hal_entry(void)
 
     R_SCI_UART_Close(&g_uart0_ctrl);
 #if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
-    R_RSIP_Close(&g_rsip_ctrl);
+    if (SECURE_APP_VERIFY_OK != secure_app_verify_close())
+    {
+        ssbl_print_verify_status("RSIP CLOSE FAIL");
+        while (1)
+        {
+            ;
+        }
+    }
 #endif
     app_prg();
 }
