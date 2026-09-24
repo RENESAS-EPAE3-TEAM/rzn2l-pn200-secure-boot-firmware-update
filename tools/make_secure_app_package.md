@@ -31,7 +31,7 @@ Package Body = PN2.0 App raw binary
 方案 A/RZSM 生成的数据结构如下：
 
 ```text
-Package Body = Secure Manifest + padding + PN2.0 App raw binary
+Package Body = Secure Manifest + padding + ordered enabled segment payloads
 ```
 
 完整 Signed Package 结构如下：
@@ -124,10 +124,10 @@ python3 make_secure_app_package.py \
 生成的 `package_body.bin` 结构为：
 
 ```text
-Secure Manifest + padding + PN2.0 App raw binary
+Secure Manifest + padding + ordered enabled segment payloads
 ```
 
-RZSM v2 可选将一个 `SYSTEM_PRG` 或 `SYSTEM_DATA` 段替换为 AES-128-CBC 密文。其余 App payload 保持原位置和原始字节，不会使用完整 RAM staging buffer。
+RZSM v2 从输入 App 的 legacy RZAP 提取每个启用段，并按 RZAP entry 顺序紧凑写入 body。每个 RZSM entry 的 `src_offset` 是该段在新 body 中的权威位置；legacy RZAP 仅作为制包输入，不会保留在 RZSM body。可选将一个 `SYSTEM_PRG` 或 `SYSTEM_DATA` 段替换为 AES-128-CBC 密文，不会使用完整 RAM staging buffer。
 
 其中 padding 使用 `0xFF` 填充，直到 payload offset 对齐位置 [1]。
 
@@ -135,7 +135,7 @@ RZSM v2 可选将一个 `SYSTEM_PRG` 或 `SYSTEM_DATA` 段替换为 AES-128-CBC 
 
 `--aes-key` 是与已配置 OTP `ckey0` 相同的 16-byte AES-128 host-side key 文件。它只在制包主机上使用，不能复制到 Loader、App 或 Flash package。`SYSTEM_PRG` 和 `SYSTEM_DATA` 是唯一允许的初始加密目标。
 
-被加密的原始段长度必须是非零的 16-byte 整数倍。当前 Loader 不支持 PKCS#7 padding，因此长度不满足时脚本会停止，不生成不可部署的包。
+加密段使用零字节补齐到下一个 16-byte AES block，且不使用 PKCS#7。entry 的 `file_size` 始终是原始明文长度，`cipher_size = align_up(file_size, 16)`；Loader 只写回 `file_size` 字节，因此 padding 不会覆盖相邻运行时内存。
 
 ```powershell
 python .\make_secure_app_package.py `
@@ -148,11 +148,11 @@ python .\make_secure_app_package.py `
   --summary-out .\rzsm_v2_summary.json
 ```
 
-每次运行都会为加密段生成新的随机 16-byte IV，并写入 authenticated RZSM entry；`cipher_size` 与 plaintext `file_size` 相等。脚本在输出前会以同一 host key 解密密文并与原始 App 段逐字节比较。
+每次运行都会为加密段生成新的随机 16-byte IV，并写入 authenticated RZSM entry。脚本在输出前会以同一 host key 解密密文，逐字节比较原始 App 段，并验证补齐部分均为零。
 
 ## 4.2 使用 6526/6527 工具签名 RZSM body
 
-`rzsm_v2_manifest.bin` 是 body 的首部副本，供检查 RZSM ABI；它不是 Renesas 工具的签名输入。必须把完整的 `rzsm_v2_body.bin` 传给两个官方工具：该文件由 `RZSM manifest + padding + App payload` 组成，已包含选中段的 AES-CBC 密文。
+`rzsm_v2_manifest.bin` 是 body 的首部副本，供检查 RZSM ABI；它不是 Renesas 工具的签名输入。必须把完整的 `rzsm_v2_body.bin` 传给两个官方工具：该文件由 `RZSM manifest + padding + ordered segment payloads` 组成，已包含选中段的 AES-CBC 密文。
 
 生成器会将 body 用 `0x00` 补齐为 16-byte 倍数，并把补齐后的完整长度写入 `RZSM package_size`。因此官方工具不会再改变 body 长度，且 Code Certificate 的 `img_len` 可与 Loader 的 Scheme A 校验严格匹配。
 

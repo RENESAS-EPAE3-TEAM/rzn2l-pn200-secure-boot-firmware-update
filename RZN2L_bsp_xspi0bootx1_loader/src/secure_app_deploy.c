@@ -61,10 +61,10 @@ static void ssbl_deploy_print_segment(uint32_t segment_index,
 #define SECURE_APP_SHARED_NONCACHE_END_EXCLUSIVE (0x30160000u)
 #ifdef USE_HRAM
 #define SECURE_APP_EXTERNAL_RAM_START             (0x64000000u)
-#define SECURE_APP_EXTERNAL_RAM_END_EXCLUSIVE     (0x64200000u)
+#define SECURE_APP_EXTERNAL_RAM_END_EXCLUSIVE     (0x64800000u)
 #else
 #define SECURE_APP_EXTERNAL_RAM_START             (0x74000000u)
-#define SECURE_APP_EXTERNAL_RAM_END_EXCLUSIVE     (0x74200000u)
+#define SECURE_APP_EXTERNAL_RAM_END_EXCLUSIVE     (0x74800000u)
 #endif
 
 #define SECURE_APP_AES_BLOCK_SIZE                 (16u)
@@ -163,16 +163,19 @@ static int encrypted_segment_destination_allowed(const secure_app_manifest_entry
 }
 
 #if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE
-static cip_drv_ret_t decrypt_encrypted_segment(const secure_app_manifest_entry_t * entry)
+static cip_drv_ret_t decrypt_aes_cbc(uint32_t source_addr,
+                                     uint32_t destination_addr,
+                                     uint32_t cipher_size,
+                                     const uint8_t aes_cbc_iv[SECURE_APP_AES_CBC_IV_SIZE])
 {
     uint32_t iv[SECURE_APP_AES_CBC_IV_SIZE / sizeof(uint32_t)];
     st_cip_drv_cipher_img_param_t decrypt_param;
 
-    memcpy(iv, entry->aes_cbc_iv, sizeof(iv));
+    memcpy(iv, aes_cbc_iv, sizeof(iv));
     decrypt_param.timing      = CIP_DRV_CIPHER_TIMING_NONE;
-    decrypt_param.p_img_src   = (const uint32_t *)(uintptr_t)(SECURE_APP_PACKAGE_BODY_ADDR + entry->src_offset);
-    decrypt_param.p_img_dst   = (uint32_t *)(uintptr_t)entry->dst_addr;
-    decrypt_param.img_len     = entry->cipher_size;
+    decrypt_param.p_img_src   = (const uint32_t *)(uintptr_t)source_addr;
+    decrypt_param.p_img_dst   = (uint32_t *)(uintptr_t)destination_addr;
+    decrypt_param.img_len     = cipher_size;
     decrypt_param.cipher_algo = CIP_DRV_CIPHER_ALGO_AES128;
     decrypt_param.cipher_mode = CIP_DRV_CIPHER_MODE_CBC;
     decrypt_param.key_select  = SECURE_APP_CKEY0_SELECT;
@@ -181,6 +184,61 @@ static cip_drv_ret_t decrypt_encrypted_segment(const secure_app_manifest_entry_t
     decrypt_param.iv_len      = sizeof(iv);
 
     return R_CIP_DRV_PrcDecryptImage(&decrypt_param);
+}
+
+static cip_drv_ret_t decrypt_encrypted_segment(const secure_app_manifest_entry_t * entry)
+{
+    uint32_t source_addr = SECURE_APP_PACKAGE_BODY_ADDR + entry->src_offset;
+    uint32_t trailing_bytes = entry->file_size % SECURE_APP_AES_BLOCK_SIZE;
+
+    if (0u == trailing_bytes)
+    {
+        return decrypt_aes_cbc(source_addr,
+                               entry->dst_addr,
+                               entry->cipher_size,
+                               entry->aes_cbc_iv);
+    }
+    else
+    {
+        uint32_t prefix_size = entry->cipher_size - SECURE_APP_AES_BLOCK_SIZE;
+        uint32_t tail_plaintext[SECURE_APP_AES_BLOCK_SIZE / sizeof(uint32_t)];
+        uint8_t tail_iv[SECURE_APP_AES_CBC_IV_SIZE];
+        cip_drv_ret_t decrypt_result;
+
+        if (0u != prefix_size)
+        {
+            decrypt_result = decrypt_aes_cbc(source_addr,
+                                              entry->dst_addr,
+                                              prefix_size,
+                                              entry->aes_cbc_iv);
+            if (CIP_DRV_RET_PASS != decrypt_result)
+            {
+                return decrypt_result;
+            }
+
+            memcpy(tail_iv,
+                   (const void *)(uintptr_t)(source_addr + prefix_size - SECURE_APP_AES_BLOCK_SIZE),
+                   sizeof(tail_iv));
+        }
+        else
+        {
+            memcpy(tail_iv, entry->aes_cbc_iv, sizeof(tail_iv));
+        }
+
+        decrypt_result = decrypt_aes_cbc(source_addr + prefix_size,
+                                          (uint32_t)(uintptr_t)tail_plaintext,
+                                          SECURE_APP_AES_BLOCK_SIZE,
+                                          tail_iv);
+        if (CIP_DRV_RET_PASS != decrypt_result)
+        {
+            return decrypt_result;
+        }
+
+        memcpy((void *)(uintptr_t)(entry->dst_addr + prefix_size),
+               tail_plaintext,
+               trailing_bytes);
+        return CIP_DRV_RET_PASS;
+    }
 }
 #endif
 
@@ -566,7 +624,9 @@ secure_app_deploy_result_t secure_app_deploy_validate(const secure_app_manifest_
         {
             if ((0u == entry->cipher_size) ||
                 (0u != (entry->cipher_size % SECURE_APP_AES_BLOCK_SIZE)) ||
-                (entry->cipher_size != entry->file_size) ||
+                (entry->file_size > (UINT32_MAX - (SECURE_APP_AES_BLOCK_SIZE - 1u))) ||
+                (entry->cipher_size != ((entry->file_size + (SECURE_APP_AES_BLOCK_SIZE - 1u)) &
+                                        ~(SECURE_APP_AES_BLOCK_SIZE - 1u))) ||
                 (SECURE_APP_AES_KEY_SELECTION_CKEY0 != entry->aes_key_selection) ||
                 !encrypted_segment_destination_allowed(entry) ||
                 (0u != (entry->src_offset % sizeof(uint32_t))) ||
