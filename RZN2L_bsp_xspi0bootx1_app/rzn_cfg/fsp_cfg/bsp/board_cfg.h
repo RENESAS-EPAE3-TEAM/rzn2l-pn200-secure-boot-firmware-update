@@ -4,7 +4,7 @@
 #include "../../../rzn/board/rzn2l_rsk/board.h"
             #define BSP_CFG_XSPI0_X1_BOOT (1)
             #ifndef APP_STANDALONE_DEBUG
-            #define APP_STANDALONE_DEBUG (1)
+            #define APP_STANDALONE_DEBUG (0)
             #endif
             #if APP_STANDALONE_DEBUG
             #define BSP_CFG_USE_LOADER_PARAMETER (1)

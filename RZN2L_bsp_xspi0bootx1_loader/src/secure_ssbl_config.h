@@ -21,7 +21,7 @@
 /* Scheme A keeps the custom RZSM secure manifest + segment deploy path.
  * Scheme B signs the whole PN2.0 App raw binary and deploys via legacy RZAP. */
 #ifndef SSBL_CFG_SECURE_APP_SCHEME
-#define SSBL_CFG_SECURE_APP_SCHEME               SSBL_CFG_SECURE_APP_SCHEME_OVERALL_APP
+#define SSBL_CFG_SECURE_APP_SCHEME               SSBL_CFG_SECURE_APP_SCHEME_RZSM
 #endif
 
 #if ((SSBL_CFG_SECURE_APP_SCHEME != SSBL_CFG_SECURE_APP_SCHEME_RZSM) && \
