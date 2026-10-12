@@ -240,23 +240,31 @@ def make_secure_manifest(
     alignment: int,
     encrypt_segment_id: int | None,
     aes_key: bytes | None,
+    encrypt_all: bool = False,
 ) -> tuple[bytes, int, bytes]:
     active_entries = [entry for entry in legacy_manifest.entries if (entry.flags & SEGMENT_FLAG_ENABLE) and entry.size]
+    if encrypt_all and encrypt_segment_id is not None:
+        raise ValueError("--encrypt-all and --encrypt-segment are mutually exclusive")
     if encrypt_segment_id is not None:
         selected_entries = [entry for entry in active_entries if entry.segment_id == encrypt_segment_id]
         if len(selected_entries) != 1:
             raise ValueError(f"encrypted segment {encrypt_segment_id} is not an enabled App segment")
-        if encrypt_segment_id not in (5, 6):
-            raise ValueError("only SYSTEM_PRG (5) or SYSTEM_DATA (6) may be encrypted")
+    encrypted_segment_ids = {entry.segment_id for entry in active_entries} if encrypt_all else (
+        {encrypt_segment_id} if encrypt_segment_id is not None else set()
+    )
+    if any(segment_id not in range(len(SEGMENT_NAMES)) for segment_id in encrypted_segment_ids):
+        raise ValueError("only known App segments may be encrypted")
+    if encrypt_all or encrypt_segment_id is not None:
         if aes_key is None:
-            raise ValueError("--aes-key is required with --encrypt-segment")
+            raise ValueError("--aes-key is required with --encrypt-segment or --encrypt-all")
     elif aes_key is not None:
-        raise ValueError("--aes-key requires --encrypt-segment")
+        raise ValueError("--aes-key requires --encrypt-segment or --encrypt-all")
 
     manifest_size = SECURE_MANIFEST_HEADER_SIZE + len(active_entries) * SECURE_MANIFEST_ENTRY_SIZE
     payload_offset = align_up(manifest_size, alignment)
     package_payload = bytearray()
     secure_entries_data = []
+    encrypted_ivs: set[bytes] = set()
 
     for entry in active_entries:
         image_offset = entry.src - image_base
@@ -277,8 +285,11 @@ def make_secure_manifest(
         aes_cbc_iv = bytes(AES_BLOCK_SIZE)
         payload = plaintext
 
-        if entry.segment_id == encrypt_segment_id:
+        if entry.segment_id in encrypted_segment_ids:
             aes_cbc_iv = os.urandom(AES_BLOCK_SIZE)
+            while aes_cbc_iv == bytes(AES_BLOCK_SIZE) or aes_cbc_iv in encrypted_ivs:
+                aes_cbc_iv = os.urandom(AES_BLOCK_SIZE)
+            encrypted_ivs.add(aes_cbc_iv)
             padded_plaintext = plaintext + bytes(align_up(len(plaintext), AES_BLOCK_SIZE) - len(plaintext))
             payload = encrypt_aes_128_cbc(padded_plaintext, aes_key, aes_cbc_iv)
             cipher_size = len(payload)
@@ -404,6 +415,7 @@ def parse_secure_manifest(body: bytes) -> SecureManifest:
 def validate_secure_manifest_layout(body: bytes, manifest: SecureManifest) -> None:
     source_ranges = []
     segment_ids = set()
+    encrypted_ivs: set[bytes] = set()
 
     for entry in manifest.entries:
         if entry.segment_id in segment_ids:
@@ -419,12 +431,16 @@ def validate_secure_manifest_layout(body: bytes, manifest: SecureManifest) -> No
             raise ValueError(f"RZSM segment {entry.segment_id} source range is outside package body")
 
         if entry.flags & SEGMENT_FLAG_ENCRYPTED:
-            if entry.segment_id not in (5, 6):
+            if entry.segment_id not in range(len(SEGMENT_NAMES)):
                 raise ValueError(f"segment {entry.segment_id} is not permitted to be encrypted")
             if (entry.cipher_size != align_up(entry.file_size, AES_BLOCK_SIZE) or
                     entry.aes_key_selection != AES_KEY_SELECTION_CKEY0 or
+                    entry.dst_addr % 4 or
                     entry.aes_cbc_iv == bytes(AES_BLOCK_SIZE)):
                 raise ValueError(f"segment {entry.segment_id} has invalid AES-CBC metadata")
+            if entry.aes_cbc_iv in encrypted_ivs:
+                raise ValueError("AES-CBC IV is reused by multiple encrypted segments")
+            encrypted_ivs.add(entry.aes_cbc_iv)
         elif (entry.cipher_size != entry.file_size or
               entry.aes_key_selection != AES_KEY_SELECTION_NONE or
               entry.aes_cbc_iv != bytes(AES_BLOCK_SIZE)):
@@ -795,7 +811,9 @@ def main() -> int:
     parser.add_argument("--package-version", type=parse_int, default=1, help="Monotonic package version for future anti-rollback")
     parser.add_argument("--package-flags", type=parse_int, default=0, help="Reserved package flags")
     parser.add_argument("--align", type=parse_int, default=16, help="Payload alignment in bytes")
-    parser.add_argument("--encrypt-segment", type=parse_segment_id, help="Encrypt one RZSM segment: SYSTEM_PRG, SYSTEM_DATA, 5, or 6")
+    encryption = parser.add_mutually_exclusive_group()
+    encryption.add_argument("--encrypt-segment", type=parse_segment_id, help="Encrypt one enabled, nonempty RZSM segment by name or ID")
+    encryption.add_argument("--encrypt-all", action="store_true", help="Encrypt every enabled, nonempty RZSM segment")
     parser.add_argument("--aes-key", type=Path, help="16-byte host key file corresponding to provisioned ckey0")
     parser.add_argument(
         "--no-cert-layout-check",
@@ -808,7 +826,8 @@ def main() -> int:
         raise ValueError("--inspect-body and --inspect-signed-package are mutually exclusive")
 
     if args.inspect_body or args.inspect_signed_package:
-        if args.app_bin or args.manifest_out or args.body_out or args.package_out or args.signed_package_out or args.encrypt_segment or args.aes_key:
+        if (args.app_bin or args.manifest_out or args.body_out or args.package_out or args.signed_package_out or
+            args.encrypt_segment is not None or args.encrypt_all or args.aes_key):
             raise ValueError("inspect mode cannot be combined with generation outputs")
         if args.inspect_body:
             body = args.inspect_body.read_bytes()
@@ -828,6 +847,8 @@ def main() -> int:
 
     if args.app_bin is None:
         raise ValueError("--app-bin is required in generation mode")
+    if args.scheme == "overall-app" and (args.encrypt_all or args.encrypt_segment is not None or args.aes_key):
+        raise ValueError("segment encryption requires --scheme rzsm")
     if ("rzsm" == args.scheme) and (args.manifest_out is None):
         raise ValueError("--manifest-out is required when --scheme rzsm")
 
@@ -899,6 +920,7 @@ def main() -> int:
         args.align,
         args.encrypt_segment,
         aes_key,
+        encrypt_all=args.encrypt_all,
     )
 
     args.manifest_out.parent.mkdir(parents=True, exist_ok=True)

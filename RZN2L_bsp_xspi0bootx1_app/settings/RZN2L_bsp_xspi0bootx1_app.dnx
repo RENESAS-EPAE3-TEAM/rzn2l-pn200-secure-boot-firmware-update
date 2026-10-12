@@ -35,8 +35,8 @@
         <CpuHaltOnBreakpointSet>0</CpuHaltOnBreakpointSet>
     </Jet>
     <ArmDriver>
-        <EnableCache>1</EnableCache>
         <EnforceMemoryConfiguration>1</EnforceMemoryConfiguration>
+        <EnableCache>1</EnableCache>
     </ArmDriver>
     <DebugChecksum>
         <Checksum>1425976789</Checksum>
@@ -110,8 +110,8 @@
         <Bp2>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.95.5" 0 0 1 "" 0 "" 0</Bp2>
         <Bp3>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_loader\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.92.1" 0 0 1 "" 0 "" 0</Bp3>
         <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\RZN2L_bsp_xspi0bootx1_loader\rzn\fsp\src\bsp\cmsis\Device\RENESAS\Source\startup.c}.106.1" 0 0 1 "" 0 "" 0</Bp4>
-        <Bp5>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.143.1" 0 0 1 "" 0 "" 0</Bp5>
-        <Bp6>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.202.5" 0 0 1 "" 0 "" 0</Bp6>
+        <Bp5>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.144.1" 0 0 1 "" 0 "" 0</Bp5>
+        <Bp6>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\fsp_mod\startup.c}.203.5" 0 0 1 "" 0 "" 0</Bp6>
         <Count>7</Count>
     </Breakpoints2>
 </settings>

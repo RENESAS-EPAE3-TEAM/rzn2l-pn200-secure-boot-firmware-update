@@ -158,8 +158,7 @@ static uint32_t segment_payload_size(const secure_app_manifest_entry_t * entry)
 
 static int encrypted_segment_destination_allowed(const secure_app_manifest_entry_t * entry)
 {
-    return (SECURE_APP_SEGMENT_ID_SYSTEM_PRG == entry->segment_id) ||
-           (SECURE_APP_SEGMENT_ID_SYSTEM_DATA == entry->segment_id);
+    return segment_destination_allowed(entry->segment_id, entry->dst_addr, entry->file_size);
 }
 
 #if SSBL_CFG_RSIP_PACKAGE_VERIFY_ENABLE

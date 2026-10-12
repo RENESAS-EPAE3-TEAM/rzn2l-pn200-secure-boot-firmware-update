@@ -127,13 +127,13 @@ python3 make_secure_app_package.py \
 Secure Manifest + padding + ordered enabled segment payloads
 ```
 
-RZSM v2 从输入 App 的 legacy RZAP 提取每个启用段，并按 RZAP entry 顺序紧凑写入 body。每个 RZSM entry 的 `src_offset` 是该段在新 body 中的权威位置；legacy RZAP 仅作为制包输入，不会保留在 RZSM body。可选将一个 `SYSTEM_PRG` 或 `SYSTEM_DATA` 段替换为 AES-128-CBC 密文，不会使用完整 RAM staging buffer。
+RZSM v2 从输入 App 的 legacy RZAP 提取每个启用且长度非零的段，并按 RZAP entry 顺序紧凑写入 body。每个 RZSM entry 的 `src_offset` 是该段在新 body 中的权威位置；legacy RZAP 仅作为制包输入，不会保留在 RZSM body。可选加密一个已知段，或通过 `--encrypt-all` 加密全部有效段，不会使用完整 RAM staging buffer。
 
 其中 padding 使用 `0xFF` 填充，直到 payload offset 对齐位置 [1]。
 
 ## 4.1 生成一个 ckey0 AES-CBC 加密段
 
-`--aes-key` 是与已配置 OTP `ckey0` 相同的 16-byte AES-128 host-side key 文件。它只在制包主机上使用，不能复制到 Loader、App 或 Flash package。`SYSTEM_PRG` 和 `SYSTEM_DATA` 是唯一允许的初始加密目标。
+`--aes-key` 是与已配置 OTP `ckey0` 相同的 16-byte AES-128 host-side key 文件。它只在制包主机上使用，不能复制到 Loader、App 或 Flash package。`--encrypt-segment` 接受已知段名称或 ID，原 `SYSTEM_PRG`/`SYSTEM_DATA` 单段命令继续有效；新增段需使用第 11 节调整后的 Loader。
 
 加密段使用零字节补齐到下一个 16-byte AES block，且不使用 PKCS#7。entry 的 `file_size` 始终是原始明文长度，`cipher_size = align_up(file_size, 16)`；Loader 只写回 `file_size` 字节，因此 padding 不会覆盖相邻运行时内存。
 
@@ -560,3 +560,113 @@ python -c "from pathlib import Path; import struct; t=Path(r'$tools'); a=(t/'RZN
 | jump 日志后卡住 | jump 日志不证明真正进入 App；检查 RSIP close、入口断点、App startup 和部署数据 |
 
 本节的签名与离线检查可在主机完成；没有板端 UART/内存证据前，不将“指导步骤已生成”报告为“板级验证已成功”。
+
+## 11. 全部有效段加密调整记录（2026-10-12）
+
+用户已确认单段 SYSTEM_DATA 加密部署成功，并于 2026-10-12 确认全部七个有效段加密方案也已通过上板验证，App 在 RZN2L RSK socket board 上正常运行。板级结论来自用户反馈；助手未独立采集完整的各段 RAM 回读。
+
+### 11.1 源码修改与兼容性
+
+- `make_secure_app_package.py` 新增 `--encrypt-all`，选择 RZAP 中启用且长度非零的全部段，包括 ID 0。与 `--encrypt-segment` 互斥，两者均要求 `--aes-key`；inspect 模式和 `overall-app` 模式拒绝加密选项。
+- 原 `--encrypt-segment SYSTEM_DATA`、`SYSTEM_PRG` 及未加密命令保持有效。单段选项扩展为所有已知、启用且非空的段，便于逐段排查；生成函数新增的 `encrypt_all=False` 参数位于末尾，兼容已有位置参数调用。
+- 每段独立零补齐到 16-byte 倍数，使用现有 ckey0，并生成非零且不重复的随机 IV。结构检查新增加密目标四字节对齐、已知 ID 和重复 IV 检查；完整离线验证逐段比较解密明文、SHA-256 和零 padding。
+- `secure_app_deploy.c` 的 `encrypted_segment_destination_allowed()` 改为复用现有 `segment_destination_allowed()`。支持所有已知段类型，但保留按段 ID 划分的目标地址白名单、范围/重叠/对齐检查、CBC metadata 检查和 IV 检查；尾块只写回有效明文的算法不变。
+- RZSM v2 header/entry ABI、Flash 地址、App 入口和原始 App 内存布局均不改变；FSP/RSIP 驱动、IAR 工程和链接配置不改动。检查现有 `rsip_validate_addr()` 确认其只验证对齐，不拒绝 VECTOR 的零地址目标；包含 VECTOR/ATCM 的七段方案已由用户确认上板运行成功，但未独立逐字节回读 ATCM。
+- 外层仍为明文 RZSM body 的 `cert-img` 签名，不添加 App 外层 `--enckey`；AES host key 不进入包。NONCACHE/SHARED_NONCACHE_BUFFER 当前没有有效 payload，今后启用且非空时也会被 `--encrypt-all` 选中。
+
+### 11.2 独立产物与生成命令
+
+保留第 10 节已验证的单段产物。以下全加密产物使用独立名称，不能交给仍仅允许 SYSTEM_PRG/SYSTEM_DATA 加密的旧 Loader。
+
+```powershell
+$tools = Join-Path $PWD 'tools'
+$python = 'C:\Program Files\Python312\python.exe'
+$toolDir = 'C:\RenesasDev\r01an6526ej0310-rzt2-n2-security-secureboot\Secure device setup\pn20_secure_ssbl'
+$body = Join-Path $tools 'rzsm_all_v2_body.bin'
+$param = Join-Path $tools 'pn20_rzsm_all_app_param.bin'
+$signed = Join-Path $tools 'pn20_secure_rzsm_all_app_package.bin'
+
+& $python "$tools\make_secure_app_package.py" --scheme rzsm `
+  --app-bin "$tools\RZN2L_bsp_xspi0bootx1_app.bin" `
+  --manifest-out "$tools\rzsm_all_v2_manifest.bin" --body-out $body `
+  --encrypt-all --aes-key "$tools\secureboot_common_key.bin" `
+  --summary-out "$tools\rzsm_all_v2_summary.json"
+if ($LASTEXITCODE -ne 0) { throw 'RZSM generation failed' }
+
+& $python "$toolDir\parameter_generator.py" userapp `
+  --src_addr 60100050 --app_start_addr 60100250 --secureboot -i $body -o $param
+if ($LASTEXITCODE -ne 0) { throw 'App parameter generation failed' }
+
+& $python "$toolDir\secureboot_utility.py" image -i $body -o $signed `
+  --param $param --rkey "$toolDir\rootkey-pair.pem" --ikey "$toolDir\loaderkey-pair.pem" `
+  --sign_target cert-img --ver 0
+if ($LASTEXITCODE -ne 0) { throw 'App signing failed' }
+```
+
+当前 Debug App 的七段为 LDR_PRG、LDR_DATA、VECTOR、USER_PRG、USER_DATA、SYSTEM_PRG、SYSTEM_DATA。段 ID/包内顺序不是 RAM 地址排序；SYSTEM_DATA 仍在 SYSTEM_PRG 的低地址侧。实际长度和偏移以新 summary 为准。
+
+本次已生成的 body 为 1,569,424 bytes，完整签名包为 1,569,936 bytes，入口仍为 `0x0011A000`。完整包 SHA-256 为 `3b55f47ce83d1a66b375bf046b471e640dc1d41b6dfdf2c3ae9050520bb4bc6a`；再次生成会因随机 IV/签名而改变哈希。
+
+真实 App 七段解密明文、SHA-256、零 padding、目标范围/不重叠和尾块链式 IV 软件模拟均通过；Root/Image 两级 ECDSA、image key binding、App parameter hash、外层明文标志/地址/长度均通过。inspect 结果分别记录在 `rzsm_all_v2_inspect_summary.json` 和 `pn20_rzsm_all_signed_summary.json`。与已有 SSBL 的签名公钥一致，但这不代表旧 SSBL 二进制具备全段部署能力。
+
+第一阶段已逐一比较原单段 manifest/body/parameter/package 和原 Loader padded bin/parameter/secure SSBL 的生成前后哈希，七个原产物均未改变。当时新 Loader 尚未编译或重新签名；随后已使用最新 Debug bin 生成独立 SSBL，见第 11.4 节。
+
+### 11.3 验证范围与后续板级步骤
+
+新增 `test_make_secure_app_package.py`，使用合成 RZAP 和非生产测试密钥。6 项测试覆盖原单段/无加密兼容、全部有效段选择、禁用/零长度段排除、IV 重试与重复拒绝、无 key/互斥选项/不兼容模式拒绝，以及 CBC 尾块软件模拟。运行：
+
+```powershell
+& 'C:\Program Files\Python312\python.exe' -m unittest discover -s tools -p test_make_secure_app_package.py -v
+```
+
+主机测试不执行真实 RSIP。当前 VS Code 缺少 C 标准头文件配置，且无可用的主机 C 编译器；助手不执行 IAR 编译。最新 Debug Loader 产物已用于第 11.4 节制包，用户已确认硬件解密与全段方案上板运行成功。以下步骤保留作为复现与进一步 RAM 回读检查流程。
+
+1. 用户在 IAR 手动重新编译修改后的 Loader；无须因制包选项重新编译未改变的 App。
+2. 使用新 Loader raw bin 按第 10 节重新 padding、生成 Loader parameter、签名并加密 SSBL；不得把旧 Debug bin 重新签名后当作新 Loader。
+3. 完成离线验签与 key identity 检查后，按原地址更新 Loader parameter `0x60000000`、新 SSBL `0x60000050`、完整全加密 App package `0x60100050`；不写 raw App 或仅写 body，不修改 OTP。
+4. 确认外层验签、七段解密部署、RSIP close、实际 App 入口和应用运行。各段 RAM 在 App 启动修改数据之前与原 App 对应明文完整比较，特别检查 VECTOR/ATCM、LDR/BTCM、USER/System RAM 和 HRAM，并验证 CBC padding 不覆盖相邻段。
+
+助手仅修改源码/文档并进行离线制包与测试，不自动运行 IAR、不写 Flash、不进行 OTP provisioning；用户自行完成上板验证并确认全段方案成功。
+
+### 11.4 新 Loader 的加密 SSBL 生成记录（2026-10-12）
+
+输入为 `RZN2L_bsp_xspi0bootx1_loader/Debug/Exe/RZN2L_bsp_xspi0bootx1_loader.bin`，修改时间 2026-10-12 15:32:10，晚于 `secure_app_deploy.c` 的 15:22:04。raw 为 51,916 bytes，SHA-256 为 `1f8611d455a3ca46b6870db8d052cb06e28250dffea96c3a3ba9e20cabd92ca8`，内容与旧 SSBL 的输入不同。
+
+按第 10.3 节的 512-byte/`0xFF` 规则生成独立 padded bin，为 52,224 bytes，尾部 padding 为 308 bytes。旧单段 SSBL 文件不覆盖。
+
+| 文件（位于 tools） | 长度（bytes） | 用途/Flash 地址 |
+| --- | ---: | --- |
+| pn20_scheme_a_all_ssbl_padded.bin | 52,224 | 中间制包输入，不单独烧录 |
+| pn20_scheme_a_all_ssbl_parameter_xspi0.bin | 76 | Loader parameter，`0x60000000` |
+| pn20_scheme_a_all_secure_ssbl_xspi0.bin | 54,272 | 新加密 SSBL，`0x60000050` |
+| pn20_secure_rzsm_all_app_package.bin | 1,569,936 | 第 11.2 节完整全加密 App 包，`0x60100050` |
+
+以下命令从 workspace 根目录执行。先按第 10.3 节重新 padding，但使用本节独立的 `$padded` 路径，再生成参数和加密 SSBL：
+
+```powershell
+$workspace = $PWD.Path
+$tools = Join-Path $workspace 'tools'
+$python = 'C:\Program Files\Python312\python.exe'
+$toolDir = 'C:\RenesasDev\r01an6526ej0310-rzt2-n2-security-secureboot\Secure device setup\pn20_secure_ssbl'
+$raw = Join-Path $workspace 'RZN2L_bsp_xspi0bootx1_loader\Debug\Exe\RZN2L_bsp_xspi0bootx1_loader.bin'
+$padded = Join-Path $tools 'pn20_scheme_a_all_ssbl_padded.bin'
+$loaderParam = Join-Path $tools 'pn20_scheme_a_all_ssbl_parameter_xspi0.bin'
+$ssbl = Join-Path $tools 'pn20_scheme_a_all_secure_ssbl_xspi0.bin'
+$aesKey = Join-Path $tools 'secureboot_common_key.bin'
+
+& $python "$toolDir\parameter_generator.py" loader --mpu rzn2l --target_cpu cr52 `
+  --src_addr 60000050 --dest_addr 00102000 --mode xspi0 --secureboot `
+  -i $padded -o $loaderParam
+if ($LASTEXITCODE -ne 0) { throw 'Loader parameter generation failed' }
+
+& $python "$toolDir\secureboot_utility.py" image -i $padded -o $ssbl `
+  --param $loaderParam --rkey "$toolDir\rootkey-pair.pem" --ikey "$toolDir\loaderkey-pair.pem" `
+  --enckey $aesKey --keyselect ckey0 --sign_target cert-img --ver 0
+if ($LASTEXITCODE -ne 0) { throw 'Encrypted SSBL generation failed' }
+```
+
+已确认 `cert-img`、加密 Enable、ckey0，Root/Image 两级 ECDSA、密文签名、image key binding 和 Loader parameter hash 均通过。完整 AES-CBC 解密结果逐字节等于新 raw Loader 加全部 `0xFF` padding；与第 11.2 节全加密 App 的 Root/Image 公钥及 `.pubkey` 均一致。完整 SSBL SHA-256 为 `906b7ec7c55b69e96457a4caa854ab1e585ecdb47f6146e6e09eaf9fc06e5667`。
+
+SSBL Code Certificate 的 `write_addr`/`dest_addr` 都是 RAM 程序地址 `0x00102800`，不是 Flash 地址。Loader parameter 中才是 Flash 来源 `0x60000050`、包含两份证书的 SSBL 长度 `0xD400`、RAM 加载基址 `0x00102000`；证书 `img_len=0xCC00` 对应 52,224-byte 密文。不要套用 App Code Certificate 的地址预期。
+
+官方工具在 workspace 根目录输出 `pn20_scheme_a_all_secure_ssbl_xspi0.log` 与同名 `.pubkey`。旧 Loader 三个产物、原单段 App 包和现有全加密 App 包的生成前后哈希均未改变。烧录时使用上表的新 Loader parameter、新 SSBL 与全加密 App 包，不混用旧单段 SSBL；助手未执行任何 Flash/OTP 操作，用户已确认全段板级验证成功。
