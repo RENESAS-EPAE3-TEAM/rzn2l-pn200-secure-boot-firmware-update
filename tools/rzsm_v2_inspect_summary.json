@@ -1,0 +1,97 @@
+{
+  "manifest_magic": "RZSM",
+  "package_size": 1569392,
+  "payload_offset": 736,
+  "payload_size": 1568656,
+  "entry_point": "0x0011A000",
+  "image_base": "0x60100250",
+  "package_base": "0x60100050",
+  "body_addr": "0x60100250",
+  "body_sha256": "f87029c0c3c549a6565a1386a10c0d73279f125867cf87c164e094ed0212dddd",
+  "segments": [
+    {
+      "segment_id": 0,
+      "name": "LDR_PRG",
+      "src_offset_in_body": "0x000002E0",
+      "dst": "0x0011A000",
+      "file_size": 7360,
+      "mem_size": 7360,
+      "cipher_size": 7360,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 1,
+      "name": "LDR_DATA",
+      "src_offset_in_body": "0x00001FA0",
+      "dst": "0x00118000",
+      "file_size": 1452,
+      "mem_size": 1452,
+      "cipher_size": 1452,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 2,
+      "name": "VECTOR",
+      "src_offset_in_body": "0x0000254C",
+      "dst": "0x00000000",
+      "file_size": 68,
+      "mem_size": 68,
+      "cipher_size": 68,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 3,
+      "name": "USER_PRG",
+      "src_offset_in_body": "0x00002590",
+      "dst": "0x10000100",
+      "file_size": 1012160,
+      "mem_size": 1012160,
+      "cipher_size": 1012160,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 4,
+      "name": "USER_DATA",
+      "src_offset_in_body": "0x000F9750",
+      "dst": "0x100F72C0",
+      "file_size": 45988,
+      "mem_size": 45988,
+      "cipher_size": 45988,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 5,
+      "name": "SYSTEM_PRG",
+      "src_offset_in_body": "0x00104AF4",
+      "dst": "0x6403EF5C",
+      "file_size": 243732,
+      "mem_size": 243732,
+      "cipher_size": 243732,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 6,
+      "name": "SYSTEM_DATA",
+      "src_offset_in_body": "0x00140308",
+      "dst": "0x64000000",
+      "file_size": 257884,
+      "mem_size": 257884,
+      "cipher_size": 257888,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "a5b4964c310af39acc525effb4152cdf",
+      "flags": "0x0000000B"
+    }
+  ]
+}

@@ -343,7 +343,7 @@ python3 make_secure_app_package.py \
 - Loader Debug 使用 `SSBL_CFG_SECURE_APP_SCHEME_RZSM`、`USE_HRAM`，验签、部署和 UART 日志均启用。
 - 使用最新 Debug Loader `.bin`；本次已签名输入为 2026-10-09 16:16:34 的 51,924-byte 文件。
 - 现有 `rzsm_v2_body.bin` 为 1,569,520 bytes，已通过离线段字节、CBC 和外层签名验证。
-- 2026-10-09 已按用户指定的 `work_secureboot_rzn2l\secureboot_common_key.bin` 覆盖 host key 并重制 App 和 SSBL；不再使用 6526 默认 `Key Data` 的 AES key。Root/Image 签名密钥仍沿用 PN2.0 验证文档指定的 `pn20_secure_ssbl` 目录。
+- 2026-10-09 已按作者指定的 `work_secureboot_rzn2l\secureboot_common_key.bin` 覆盖 host key 并重制 App 和 SSBL；不再使用 6526 默认 `Key Data` 的 AES key。Root/Image 签名密钥仍沿用 PN2.0 验证文档指定的 `pn20_secure_ssbl` 目录。
 - SSBL 整镜像加密，由 BootROM 验签和解密后启动；App 外层不加密，由 SSBL 验签后仅解密 SYSTEM_DATA。两个加密层彼此独立，但本次使用同一 ckey0。
 - 板卡已经配置对应 Root Public Key 和 OTP ckey0；host AES key 必须与该 ckey0 一致。主机回环解密不能证明 OTP key 一致。
 - 本流程只更新 Flash，不写 OTP，不执行 `setboot --enable`，不禁用 SCI/USB Boot。不确定板卡 provisioning 状态时停止。
@@ -563,7 +563,7 @@ python -c "from pathlib import Path; import struct; t=Path(r'$tools'); a=(t/'RZN
 
 ## 11. 全部有效段加密调整记录（2026-10-12）
 
-用户已确认单段 SYSTEM_DATA 加密部署成功，并于 2026-10-12 确认全部七个有效段加密方案也已通过上板验证，App 在 RZN2L RSK socket board 上正常运行。板级结论来自用户反馈；助手未独立采集完整的各段 RAM 回读。
+作者已确认单段 SYSTEM_DATA 加密部署成功，并于 2026-10-12 确认全部七个有效段加密方案也已通过上板验证，App 在 RZN2L RSK socket board 上正常运行。板级结论来自作者反馈。
 
 ### 11.1 源码修改与兼容性
 
@@ -571,7 +571,7 @@ python -c "from pathlib import Path; import struct; t=Path(r'$tools'); a=(t/'RZN
 - 原 `--encrypt-segment SYSTEM_DATA`、`SYSTEM_PRG` 及未加密命令保持有效。单段选项扩展为所有已知、启用且非空的段，便于逐段排查；生成函数新增的 `encrypt_all=False` 参数位于末尾，兼容已有位置参数调用。
 - 每段独立零补齐到 16-byte 倍数，使用现有 ckey0，并生成非零且不重复的随机 IV。结构检查新增加密目标四字节对齐、已知 ID 和重复 IV 检查；完整离线验证逐段比较解密明文、SHA-256 和零 padding。
 - `secure_app_deploy.c` 的 `encrypted_segment_destination_allowed()` 改为复用现有 `segment_destination_allowed()`。支持所有已知段类型，但保留按段 ID 划分的目标地址白名单、范围/重叠/对齐检查、CBC metadata 检查和 IV 检查；尾块只写回有效明文的算法不变。
-- RZSM v2 header/entry ABI、Flash 地址、App 入口和原始 App 内存布局均不改变；FSP/RSIP 驱动、IAR 工程和链接配置不改动。检查现有 `rsip_validate_addr()` 确认其只验证对齐，不拒绝 VECTOR 的零地址目标；包含 VECTOR/ATCM 的七段方案已由用户确认上板运行成功，但未独立逐字节回读 ATCM。
+- RZSM v2 header/entry ABI、Flash 地址、App 入口和原始 App 内存布局均不改变；FSP/RSIP 驱动、IAR 工程和链接配置不改动。检查现有 `rsip_validate_addr()` 确认其只验证对齐，不拒绝 VECTOR 的零地址目标；包含 VECTOR/ATCM 的七段方案已由作者确认上板运行成功，但未独立逐字节回读 ATCM。
 - 外层仍为明文 RZSM body 的 `cert-img` 签名，不添加 App 外层 `--enckey`；AES host key 不进入包。NONCACHE/SHARED_NONCACHE_BUFFER 当前没有有效 payload，今后启用且非空时也会被 `--encrypt-all` 选中。
 
 ### 11.2 独立产物与生成命令
@@ -619,14 +619,14 @@ if ($LASTEXITCODE -ne 0) { throw 'App signing failed' }
 & 'C:\Program Files\Python312\python.exe' -m unittest discover -s tools -p test_make_secure_app_package.py -v
 ```
 
-主机测试不执行真实 RSIP。当前 VS Code 缺少 C 标准头文件配置，且无可用的主机 C 编译器；助手不执行 IAR 编译。最新 Debug Loader 产物已用于第 11.4 节制包，用户已确认硬件解密与全段方案上板运行成功。以下步骤保留作为复现与进一步 RAM 回读检查流程。
+主机测试不执行真实 RSIP。当前 VS Code 缺少 C 标准头文件配置，且无可用的主机 C 编译器；助手不执行 IAR 编译。最新 Debug Loader 产物已用于第 11.4 节制包，作者已确认硬件解密与全段方案上板运行成功。以下步骤保留作为复现与进一步 RAM 回读检查流程。
 
-1. 用户在 IAR 手动重新编译修改后的 Loader；无须因制包选项重新编译未改变的 App。
+1. 作者在 IAR 手动重新编译修改后的 Loader；无须因制包选项重新编译未改变的 App。
 2. 使用新 Loader raw bin 按第 10 节重新 padding、生成 Loader parameter、签名并加密 SSBL；不得把旧 Debug bin 重新签名后当作新 Loader。
 3. 完成离线验签与 key identity 检查后，按原地址更新 Loader parameter `0x60000000`、新 SSBL `0x60000050`、完整全加密 App package `0x60100050`；不写 raw App 或仅写 body，不修改 OTP。
 4. 确认外层验签、七段解密部署、RSIP close、实际 App 入口和应用运行。各段 RAM 在 App 启动修改数据之前与原 App 对应明文完整比较，特别检查 VECTOR/ATCM、LDR/BTCM、USER/System RAM 和 HRAM，并验证 CBC padding 不覆盖相邻段。
 
-助手仅修改源码/文档并进行离线制包与测试，不自动运行 IAR、不写 Flash、不进行 OTP provisioning；用户自行完成上板验证并确认全段方案成功。
+助手仅修改源码/文档并进行离线制包与测试，不自动运行 IAR、不写 Flash、不进行 OTP provisioning；作者自行完成上板验证并确认全段方案成功。
 
 ### 11.4 新 Loader 的加密 SSBL 生成记录（2026-10-12）
 
@@ -669,4 +669,4 @@ if ($LASTEXITCODE -ne 0) { throw 'Encrypted SSBL generation failed' }
 
 SSBL Code Certificate 的 `write_addr`/`dest_addr` 都是 RAM 程序地址 `0x00102800`，不是 Flash 地址。Loader parameter 中才是 Flash 来源 `0x60000050`、包含两份证书的 SSBL 长度 `0xD400`、RAM 加载基址 `0x00102000`；证书 `img_len=0xCC00` 对应 52,224-byte 密文。不要套用 App Code Certificate 的地址预期。
 
-官方工具在 workspace 根目录输出 `pn20_scheme_a_all_secure_ssbl_xspi0.log` 与同名 `.pubkey`。旧 Loader 三个产物、原单段 App 包和现有全加密 App 包的生成前后哈希均未改变。烧录时使用上表的新 Loader parameter、新 SSBL 与全加密 App 包，不混用旧单段 SSBL；助手未执行任何 Flash/OTP 操作，用户已确认全段板级验证成功。
+官方工具在 workspace 根目录输出 `pn20_scheme_a_all_secure_ssbl_xspi0.log` 与同名 `.pubkey`。旧 Loader 三个产物、原单段 App 包和现有全加密 App 包的生成前后哈希均未改变。烧录时使用上表的新 Loader parameter、新 SSBL 与全加密 App 包，不混用旧单段 SSBL；AI助手未执行任何 Flash/OTP 操作，作者已确认全段板级验证成功。

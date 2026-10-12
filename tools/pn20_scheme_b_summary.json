@@ -1,0 +1,75 @@
+{
+  "scheme": "overall-app",
+  "manifest_magic": "RZAP",
+  "package_base": "0x60100050",
+  "body_addr": "0x60100250",
+  "body_size": 1569280,
+  "body_sha256": "faa79bedd0971775e821da2be4b0bbee92007b542b10ecc9bf61911c02694b62",
+  "image_base": "0x60100050",
+  "entry_point": "0x0011A000",
+  "segments": [
+    {
+      "segment_id": 0,
+      "name": "LDR_PRG",
+      "src": "0x60100150",
+      "runtime_src": "0x60100350",
+      "dst": "0x0011A000",
+      "size": 7400,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 1,
+      "name": "LDR_DATA",
+      "src": "0x6027EC00",
+      "runtime_src": "0x6027EE00",
+      "dst": "0x00118000",
+      "size": 1452,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 2,
+      "name": "VECTOR",
+      "src": "0x6027F200",
+      "runtime_src": "0x6027F400",
+      "dst": "0x00000000",
+      "size": 68,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 3,
+      "name": "USER_PRG",
+      "src": "0x60101E38",
+      "runtime_src": "0x60102038",
+      "dst": "0x10000100",
+      "size": 1012160,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 4,
+      "name": "USER_DATA",
+      "src": "0x60273768",
+      "runtime_src": "0x60273968",
+      "dst": "0x100F72C0",
+      "size": 45988,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 5,
+      "name": "SYSTEM_PRG",
+      "src": "0x60237F54",
+      "runtime_src": "0x60238154",
+      "dst": "0x7403EF5C",
+      "size": 243732,
+      "flags": "0x00000001"
+    },
+    {
+      "segment_id": 6,
+      "name": "SYSTEM_DATA",
+      "src": "0x601F8FF8",
+      "runtime_src": "0x601F91F8",
+      "dst": "0x74000000",
+      "size": 257884,
+      "flags": "0x00000001"
+    }
+  ]
+}

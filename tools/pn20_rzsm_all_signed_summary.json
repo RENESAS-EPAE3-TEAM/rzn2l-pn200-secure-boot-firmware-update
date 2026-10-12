@@ -1,0 +1,97 @@
+{
+  "manifest_magic": "RZSM",
+  "package_size": 1569424,
+  "payload_offset": 736,
+  "payload_size": 1568688,
+  "entry_point": "0x0011A000",
+  "image_base": "0x60100250",
+  "package_base": "0x60100050",
+  "body_addr": "0x60100250",
+  "body_sha256": "520885d48148ae114047c3431671909af64474af9670e4ec70717d47b5789c00",
+  "segments": [
+    {
+      "segment_id": 0,
+      "name": "LDR_PRG",
+      "src_offset_in_body": "0x000002E0",
+      "dst": "0x0011A000",
+      "file_size": 7360,
+      "mem_size": 7360,
+      "cipher_size": 7360,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "a51d3cd24847078c311caa3fa4ffbf4f",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 1,
+      "name": "LDR_DATA",
+      "src_offset_in_body": "0x00001FA0",
+      "dst": "0x00118000",
+      "file_size": 1452,
+      "mem_size": 1452,
+      "cipher_size": 1456,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "cc31df666ead5d4916267116cda15f3d",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 2,
+      "name": "VECTOR",
+      "src_offset_in_body": "0x00002550",
+      "dst": "0x00000000",
+      "file_size": 68,
+      "mem_size": 68,
+      "cipher_size": 80,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "31deea264402ef37e7d7e0e6c3623fce",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 3,
+      "name": "USER_PRG",
+      "src_offset_in_body": "0x000025A0",
+      "dst": "0x10000100",
+      "file_size": 1012160,
+      "mem_size": 1012160,
+      "cipher_size": 1012160,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "0ac3b419cf3e03a15d3b2c4c3a3a02bc",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 4,
+      "name": "USER_DATA",
+      "src_offset_in_body": "0x000F9760",
+      "dst": "0x100F72C0",
+      "file_size": 45988,
+      "mem_size": 45988,
+      "cipher_size": 46000,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "c6a573b0f49526480bbf05712c0ca811",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 5,
+      "name": "SYSTEM_PRG",
+      "src_offset_in_body": "0x00104B10",
+      "dst": "0x6403EF5C",
+      "file_size": 243732,
+      "mem_size": 243732,
+      "cipher_size": 243744,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "2499f7c1def3e22931c443094902d5a4",
+      "flags": "0x0000000B"
+    },
+    {
+      "segment_id": 6,
+      "name": "SYSTEM_DATA",
+      "src_offset_in_body": "0x00140330",
+      "dst": "0x64000000",
+      "file_size": 257884,
+      "mem_size": 257884,
+      "cipher_size": 257888,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "62421cc27b5264cabea777049a621ad1",
+      "flags": "0x0000000B"
+    }
+  ]
+}

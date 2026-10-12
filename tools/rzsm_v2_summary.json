@@ -1,0 +1,122 @@
+{
+  "manifest_magic": "RZSM",
+  "manifest_out": "C:\\Users\\MyPC\\Desktop\\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\\iar_project\\tools\\rzsm_v2_manifest.bin",
+  "manifest_size": 736,
+  "payload_offset": 736,
+  "payload_size": 1568656,
+  "package_size": 1569392,
+  "body_size": 1569392,
+  "entry_point": "0x0011A000",
+  "image_base": "0x60100250",
+  "app_image_sha256": "a9d0c62d61d24dc2cab2b62f4c2855a2510cfd76a8cb457de0fdb0b53cf1c4c7",
+  "body_sha256": "f87029c0c3c549a6565a1386a10c0d73279f125867cf87c164e094ed0212dddd",
+  "layout": {
+    "package_base": "0x60100050",
+    "key_cert_addr": "0x60100050",
+    "key_cert_size": 224,
+    "code_cert_addr": "0x60100130",
+    "code_cert_size": 288,
+    "body_addr": "0x60100250",
+    "body_size": 1569392,
+    "manifest_addr": "0x60100250",
+    "payload_addr": "0x60100530",
+    "payload_size": 1568656
+  },
+  "outputs": {
+    "body_out": "C:\\Users\\MyPC\\Desktop\\Renesas_PROFINET_IRT_DEVKIT_V2.0.0\\iar_project\\tools\\rzsm_v2_body.bin",
+    "signed_package_out": null
+  },
+  "segments": [
+    {
+      "segment_id": 0,
+      "name": "LDR_PRG",
+      "src": "0x60100350",
+      "image_offset": "0x00000100",
+      "src_offset_in_body": "0x000002E0",
+      "dst": "0x0011A000",
+      "size": 7360,
+      "cipher_size": 7360,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 1,
+      "name": "LDR_DATA",
+      "src": "0x6027EE00",
+      "image_offset": "0x0017EBB0",
+      "src_offset_in_body": "0x00001FA0",
+      "dst": "0x00118000",
+      "size": 1452,
+      "cipher_size": 1452,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 2,
+      "name": "VECTOR",
+      "src": "0x6027F400",
+      "image_offset": "0x0017F1B0",
+      "src_offset_in_body": "0x0000254C",
+      "dst": "0x00000000",
+      "size": 68,
+      "cipher_size": 68,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 3,
+      "name": "USER_PRG",
+      "src": "0x60102010",
+      "image_offset": "0x00001DC0",
+      "src_offset_in_body": "0x00002590",
+      "dst": "0x10000100",
+      "size": 1012160,
+      "cipher_size": 1012160,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 4,
+      "name": "USER_DATA",
+      "src": "0x60273940",
+      "image_offset": "0x001736F0",
+      "src_offset_in_body": "0x000F9750",
+      "dst": "0x100F72C0",
+      "size": 45988,
+      "cipher_size": 45988,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 5,
+      "name": "SYSTEM_PRG",
+      "src": "0x6023812C",
+      "image_offset": "0x00137EDC",
+      "src_offset_in_body": "0x00104AF4",
+      "dst": "0x6403EF5C",
+      "size": 243732,
+      "cipher_size": 243732,
+      "aes_key_selection": 0,
+      "aes_cbc_iv": null,
+      "flags": "0x00000009"
+    },
+    {
+      "segment_id": 6,
+      "name": "SYSTEM_DATA",
+      "src": "0x601F91D0",
+      "image_offset": "0x000F8F80",
+      "src_offset_in_body": "0x00140308",
+      "dst": "0x64000000",
+      "size": 257884,
+      "cipher_size": 257888,
+      "aes_key_selection": 1,
+      "aes_cbc_iv": "a5b4964c310af39acc525effb4152cdf",
+      "flags": "0x0000000B"
+    }
+  ]
+}
