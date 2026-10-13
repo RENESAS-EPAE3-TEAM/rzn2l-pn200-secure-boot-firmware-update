@@ -46,7 +46,7 @@ Signed Package = Key Certificate + Code Certificate + Package Body
 
 ## 2. 运行环境
 
-该脚本是 Python 3 脚本，文件头为：
+该脚本是 Python 3 脚本，作者使用的Python版本是3.12.0，文件头为：
 
 ```python
 #!/usr/bin/env python3
@@ -127,13 +127,13 @@ python3 make_secure_app_package.py \
 Secure Manifest + padding + ordered enabled segment payloads
 ```
 
-RZSM v2 从输入 App 的 legacy RZAP 提取每个启用且长度非零的段，并按 RZAP entry 顺序紧凑写入 body。每个 RZSM entry 的 `src_offset` 是该段在新 body 中的权威位置；legacy RZAP 仅作为制包输入，不会保留在 RZSM body。可选加密一个已知段，或通过 `--encrypt-all` 加密全部有效段，不会使用完整 RAM staging buffer。
+RZSM v2 从输入 App 的 legacy RZAP 提取每个启用且长度非零的段，并按 RZAP entry 顺序紧凑写入 body。每个 RZSM entry 的 `src_offset` 是该段在新 body 中的权威位置；legacy RZAP 仅作为制包输入，不会保留在 RZSM body。可选加密一个已知段，或通过 `--encrypt-all` 加密全部有效段，不会使用额外的 RAM staging buffer。
 
 其中 padding 使用 `0xFF` 填充，直到 payload offset 对齐位置 [1]。
 
 ## 4.1 生成一个 ckey0 AES-CBC 加密段
 
-`--aes-key` 是与已配置 OTP `ckey0` 相同的 16-byte AES-128 host-side key 文件。它只在制包主机上使用，不能复制到 Loader、App 或 Flash package。`--encrypt-segment` 接受已知段名称或 ID，原 `SYSTEM_PRG`/`SYSTEM_DATA` 单段命令继续有效；新增段需使用第 11 节调整后的 Loader。
+`--aes-key` 是与已配置 OTP `ckey0` 相同的 16-byte AES-128 host-side key 文件。它只在制包主机上使用，不能复制到 Loader、App 或 Flash package。`--encrypt-segment` 接受已知段名称或 ID，新增段需使用第 11 节调整后的 Loader。
 
 加密段使用零字节补齐到下一个 16-byte AES block，且不使用 PKCS#7。entry 的 `file_size` 始终是原始明文长度，`cipher_size = align_up(file_size, 16)`；Loader 只写回 `file_size` 字节，因此 padding 不会覆盖相邻运行时内存。
 
@@ -152,11 +152,13 @@ python .\make_secure_app_package.py `
 
 ## 4.2 使用 6526/6527 工具签名 RZSM body
 
+6526/6527分别指是的官方例程：“r01an6526ej0310-rzt2-n2-security-secureboot” 和 “r01an6527ej0310-rzt2-n2-security-fwupdate”
+
 `rzsm_v2_manifest.bin` 是 body 的首部副本，供检查 RZSM ABI；它不是 Renesas 工具的签名输入。必须把完整的 `rzsm_v2_body.bin` 传给两个官方工具：该文件由 `RZSM manifest + padding + ordered segment payloads` 组成，已包含选中段的 AES-CBC 密文。
 
 生成器会将 body 用 `0x00` 补齐为 16-byte 倍数，并把补齐后的完整长度写入 `RZSM package_size`。因此官方工具不会再改变 body 长度，且 Code Certificate 的 `img_len` 可与 Loader 的 Scheme A 校验严格匹配。
 
-在 6526 的 `pn20_secure_ssbl` 工具目录中执行。6527 使用同一 `parameter_generator.py userapp` 与 `secureboot_utility.py image` 机制，参数相同：
+在 6526 的 `pn20_secure_ssbl` 工具目录中执行（目录信息需要以实际用户的目录调整）。6527 使用同一 `parameter_generator.py userapp` 与 `secureboot_utility.py image` 机制，参数相同：
 
 ```powershell
 $body = "C:\path\to\rzsm_v2_body.bin"
@@ -279,7 +281,7 @@ Key Certificate + Code Certificate + Package Body
 - `dest_addr`
 - `img_size`
 
-其中 `dest_addr` 需要等于：
+其中 `img_size` 需要等于：
 
 ```text
 package_base + KEY_CERT_SIZE + CODE_CERT_SIZE
@@ -335,7 +337,7 @@ python3 make_secure_app_package.py \
 
 ## 10. Scheme A: 加密 Secure SSBL 签名、烧录与单段加密验收
 
-本节用于已经手动编译完成的 Loader Debug/Scheme A。
+本节用于已经编译完成的 Loader Debug/Scheme A。
 “单加密 SYSTEM_DATA”指完整 App 包仍保留全部 7 个启用段，仅 SYSTEM_DATA 加密；不是只包含 SYSTEM_DATA 的单段包。缺少 LDR_PRG、VECTOR 等必需段的包不能正常启动 App。
 
 ### 10.1 本次输入和安全前提
@@ -346,8 +348,8 @@ python3 make_secure_app_package.py \
 - 2026-10-09 已按作者指定的 `work_secureboot_rzn2l\secureboot_common_key.bin` 覆盖 host key 并重制 App 和 SSBL；不再使用 6526 默认 `Key Data` 的 AES key。Root/Image 签名密钥仍沿用 PN2.0 验证文档指定的 `pn20_secure_ssbl` 目录。
 - SSBL 整镜像加密，由 BootROM 验签和解密后启动；App 外层不加密，由 SSBL 验签后仅解密 SYSTEM_DATA。两个加密层彼此独立，但本次使用同一 ckey0。
 - 板卡已经配置对应 Root Public Key 和 OTP ckey0；host AES key 必须与该 ckey0 一致。主机回环解密不能证明 OTP key 一致。
-- 本流程只更新 Flash，不写 OTP，不执行 `setboot --enable`，不禁用 SCI/USB Boot。不确定板卡 provisioning 状态时停止。
-- 烧录会替换现有 Loader 和 App。保留已验证的旧镜像以备恢复，不覆盖其他 Flash 分区。
+- 本流程只更新 Flash，不写 OTP，不执行 `setboot --enable`，不禁用 SCI/USB Boot。
+- 烧录会替换现有 Loader 和 App。
 
 ### 10.2 定义路径
 
@@ -371,7 +373,7 @@ Set-Location $workspace
 
 官方工具的 `.log` 和 `.pubkey` 输出到命令工作目录，不是 `-o` 所在目录。本节固定工作目录为工程根目录。
 
-host AES key 必须从指定的自定义实验目录复制，不能仅凭同名文件选择默认例程 key；不输出密钥内容：
+host AES key 必须从指定的自定义实验目录复制,或着保证与OTP key0的秘钥一致，不能仅凭同名文件选择默认例程 key；不输出密钥内容：
 
 ```powershell
 if ([System.IO.File]::ReadAllBytes("$keyDir\secureboot_common_key.bin").Length -ne 16) { throw "Expected 16-byte AES key" }
@@ -414,11 +416,11 @@ python "$toolDir\secureboot_utility.py" image `
   --sign_target cert-img --ver 0
 ```
 
-SSBL 使用 `--enckey` 开启 AES 加密，并以默认 `enc-sign` 顺序对证书和密文签名。单独指定 `--keyselect ckey0` 不会开启加密。本次完整 SSBL 长度为 `52224 + 0x800 = 54272` bytes。离线验证已确认 SSBL 解密结果与当前 Debug Loader 及全部 `0xFF` 填充逐字节相同。
+SSBL 使用 `--enckey` 开启 AES 加密，并以默认 `enc-sign` 顺序对证书和密文签名。本次完整 SSBL 长度为 `52224 + 0x800 = 54272` bytes。离线验证已确认 SSBL 解密结果与当前 Debug Loader 及全部 `0xFF` 填充逐字节相同。
 
 ### 10.4 完整 RZSM App 外层签名与烧录前检查
 
-现有 App 包已使用新的 host key 重制并签名。如果仅重编译 Loader，没有改变 App 或 host key，不必重制 App body。更换 host key 时必须重新生成 SYSTEM_DATA 密文及 manifest，然后重新签名，不能只对旧 body 重签名。完整复现命令如下：
+现有 App 包已使用新的 host key 加密并签名。如果仅重编译 Loader，没有改变 App 或 host key，不必重制 App body。更换 host key 时必须重新生成 SYSTEM_DATA 密文及 manifest，然后重新签名，不能只对旧 body 重签名。完整复现命令如下：
 
 ```powershell
 python "$tools\make_secure_app_package.py" --scheme rzsm `
