@@ -1,4 +1,4 @@
-# RZN2L PN2.0 Secure Boot Guide Line
+# RZN2L PN2.0 Secure Boot On Board Verification Guide Line
 
 本文只列操作步骤和每步输出。主线为 **HyperRAM、加密并签名 Loader、全段加密并签名 App**。
 
@@ -27,7 +27,7 @@
 iar_project/
   RZN2L_bsp_xspi0bootx1_loader_app.eww
   tools/
-    rzn2l_PN20_Secure_Boot_Guide_Line_cn.md
+    RZN2L PN2.0 Secure Boot on board verification guide line.md
     make_secure_app_package.py
     renesas_secureboot/
       pn20_secure_ssbl/
